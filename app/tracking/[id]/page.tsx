@@ -9,9 +9,17 @@ import {
 } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { getStatusSteps, formatPrice, cn } from "@/lib/utils";
+import { msToNextStage } from "@/lib/delivery";
+import { notifyDelivery } from "@/lib/notify";
+import { orderSeenStorage } from "@/lib/storage";
 import { Confetti } from "@/components/ui/Confetti";
 import { CartBuddy } from "@/components/ui/CartBuddy";
 import { DeliveryNotifyButton } from "@/components/DeliveryNotifyButton";
+
+const STATUS_LABEL: Record<string, string> = {
+  placed: "Order Placed", packed: "Packed", shipped: "Shipped",
+  out_for_delivery: "Out for Delivery", delivered: "Delivered",
+};
 
 const REALITY_OPTIONS = [
   { value: "yes" as const, emoji: "😍", label: "Yes, still want it!" },
@@ -39,14 +47,16 @@ const REALITY_OUTCOMES: Record<string, { title: string; sub: string; color: stri
 
 export default function TrackingPage() {
   const params = useParams();
+  const orderId = params.id as string;
   const { getOrder, refreshOrders, markUnboxed, saveRealityCheck } = useOrders();
   const [tick, setTick] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [unboxing, setUnboxing] = useState(false);
   const [unboxDone, setUnboxDone] = useState(false);
+  const [awayBanner, setAwayBanner] = useState<string | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 2000);
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -54,7 +64,22 @@ export default function TrackingPage() {
     refreshOrders();
   }, [tick]);
 
-  const order = getOrder(params.id as string);
+  const order = getOrder(orderId);
+
+  // Detect status advances: "while you were away" banner on first view, push
+  // notifications for live transitions, and confetti on delivery.
+  useEffect(() => {
+    if (!order) return;
+    const seen = orderSeenStorage.get(orderId);
+    if (seen && seen !== order.status) {
+      // It moved since the user last looked.
+      if (order.status === "out_for_delivery" || order.status === "delivered") {
+        notifyDelivery(order.status, order.items[0]?.product.name);
+      }
+      setAwayBanner(STATUS_LABEL[order.status] ?? order.status);
+    }
+    orderSeenStorage.set(orderId, order.status);
+  }, [order?.status, orderId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleUnbox() {
     setUnboxing(true);
@@ -85,6 +110,8 @@ export default function TrackingPage() {
   const isDelivered = order.status === "delivered";
   const mainItem = order.items[0];
   const alreadyUnboxed = order.unboxed || unboxDone;
+  const msNext = msToNextStage(order.placedAt);
+  const nextCountdown = msNext > 0 ? `${Math.floor(msNext / 60000)}m ${Math.floor((msNext % 60000) / 1000)}s` : null;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -94,6 +121,18 @@ export default function TrackingPage() {
         <ArrowLeft className="w-4 h-4" />
         All Orders
       </Link>
+
+      {/* While-you-were-away banner */}
+      {awayBanner && (
+        <div className="mb-5 rounded-2xl p-4 bg-gradient-to-r from-zen-500 to-calm-500 text-white flex items-center gap-3 animate-slide-up">
+          <span className="text-2xl">👀</span>
+          <div className="flex-1">
+            <p className="font-bold text-sm">Progress while you were away!</p>
+            <p className="text-xs text-white/80">Your order moved to <span className="font-semibold">{awayBanner}</span> since your last visit.</p>
+          </div>
+          <button onClick={() => setAwayBanner(null)} className="text-white/70 hover:text-white text-lg leading-none">×</button>
+        </div>
+      )}
 
       {/* Header card */}
       <div className="card p-5 mb-5">
@@ -133,9 +172,9 @@ export default function TrackingPage() {
           <Package className="w-4 h-4 text-orange-500" />
           Delivery Journey
           {!isDelivered && (
-            <span className="ml-auto flex items-center gap-1 text-xs text-orange-500 font-medium">
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-orange-500 font-medium">
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              Live
+              {nextCountdown ? <>Next update in <span className="font-mono font-bold tabular-nums">{nextCountdown}</span></> : "Live"}
             </span>
           )}
         </h2>

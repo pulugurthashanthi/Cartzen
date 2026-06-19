@@ -1,19 +1,28 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { ordersStorage, savingsStorage } from "@/lib/storage";
-import { advanceOrderStatus } from "@/lib/utils";
+import { progressOrders } from "@/lib/delivery";
 import type { Order, CartItem, JournalEntry } from "@/types";
 import { generateOrderId } from "@/lib/utils";
+
+// Reads orders from storage, applies timestamp-derived delivery progression,
+// and persists any changes so progress survives reloads + Firestore sync.
+function loadProgressed(): Order[] {
+  const raw = ordersStorage.get();
+  const { orders, changed } = progressOrders(raw);
+  if (changed) ordersStorage.set(orders);
+  return orders;
+}
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [savings, setSavings] = useState(0);
 
   useEffect(() => {
-    setOrders(ordersStorage.get());
+    setOrders(loadProgressed());
     setSavings(savingsStorage.get());
     const onSync = () => {
-      setOrders(ordersStorage.get());
+      setOrders(loadProgressed());
       setSavings(savingsStorage.get());
     };
     window.addEventListener("cartzen:synced", onSync);
@@ -22,19 +31,15 @@ export function useOrders() {
 
   const placeOrder = useCallback(
     (items: CartItem[], journalEntry?: JournalEntry, deliveryAddress?: string): Order => {
-      const total = items.reduce(
-        (sum, i) => sum + i.product.price * i.quantity,
-        0
-      );
+      const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+      const now = new Date().toISOString();
       const order: Order = {
         id: generateOrderId(),
         items,
         total,
-        placedAt: new Date().toISOString(),
+        placedAt: now,
         status: "placed",
-        statusHistory: [
-          { status: "placed", timestamp: new Date().toISOString() },
-        ],
+        statusHistory: [{ status: "placed", timestamp: now }],
         deliveryAddress: deliveryAddress ?? "123 Zen Street, Calm Nagar, Bangalore 560001",
         journalEntry,
       };
@@ -43,22 +48,8 @@ export function useOrders() {
       savingsStorage.add(total);
       setOrders((prev) => [order, ...prev]);
       setSavings((prev) => prev + total);
-
-      // Simulate day-by-day delivery (compressed to seconds for demo)
-      let currentOrder = order;
-      const delays = [4000, 8000, 14000, 22000];
-      delays.forEach((delay) => {
-        setTimeout(() => {
-          currentOrder = advanceOrderStatus(currentOrder);
-          ordersStorage.set(
-            ordersStorage.get().map((o) => (o.id === currentOrder.id ? currentOrder : o))
-          );
-          setOrders((prev) =>
-            prev.map((o) => (o.id === currentOrder.id ? currentOrder : o))
-          );
-        }, delay);
-      });
-
+      // No setTimeout needed — status is derived from placedAt on every read,
+      // so the order progresses even if the user closes the app.
       return order;
     },
     []
@@ -70,7 +61,7 @@ export function useOrders() {
   );
 
   const refreshOrders = useCallback(() => {
-    setOrders(ordersStorage.get());
+    setOrders(loadProgressed());
     setSavings(savingsStorage.get());
   }, []);
 

@@ -151,3 +151,14 @@ export const lootClaimStorage = {
     if (!existing.includes(orderId)) safeSet(LOOT_CLAIMED_KEY, [orderId, ...existing].slice(0, 200));
   },
 };
+
+// Last delivery status the user actually saw per order (powers "while you were away")
+const ORDER_SEEN_KEY = "cartzen_order_seen";
+export const orderSeenStorage = {
+  get: (orderId: string): string | undefined => safeGet<Record<string, string>>(ORDER_SEEN_KEY, {})[orderId],
+  set: (orderId: string, status: string) => {
+    const map = safeGet<Record<string, string>>(ORDER_SEEN_KEY, {});
+    map[orderId] = status;
+    safeSet(ORDER_SEEN_KEY, map);
+  },
+};

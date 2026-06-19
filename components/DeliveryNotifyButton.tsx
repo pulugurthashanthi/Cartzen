@@ -1,49 +1,31 @@
 "use client";
-import { useState } from "react";
-import { Bell, BellRing, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BellRing, Check } from "lucide-react";
+import { ensureNotifyPermission, canNotify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
-const STEPS = [
-  { delay: 4000, title: "📦 CartZen Delivery", body: "Your package has been picked up and is on its way!" },
-  { delay: 9000, title: "🛵 Out for delivery!", body: "Your (imaginary) order is arriving today. Be home! …or don't, it's not real." },
-  { delay: 14000, title: "🎉 Delivered!", body: "Package left at your doorstep. Cost to you: ₹0. Open it in the app!" },
-];
-
+// Enables browser notifications so the user gets pinged when their order moves
+// to "out for delivery" / "delivered" — even if the tab is in the background.
+// Transitions are timestamp-derived (lib/delivery) and fired from the tracking
+// page; a real backend would later push these server-side.
 export function DeliveryNotifyButton({ productName }: { productName?: string }) {
-  const [state, setState] = useState<"idle" | "scheduled" | "denied">("idle");
+  void productName;
+  const [state, setState] = useState<"idle" | "on" | "denied">("idle");
+
+  useEffect(() => {
+    if (canNotify()) setState("on");
+  }, []);
 
   async function enable() {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      setState("denied");
-      return;
-    }
-    let permission = Notification.permission;
-    if (permission === "default") permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      setState("denied");
-      return;
-    }
-    setState("scheduled");
-    STEPS.forEach((step) => {
-      setTimeout(() => {
-        try {
-          new Notification(step.title, {
-            body: productName ? step.body.replace("Your package", `"${productName}"`) : step.body,
-            icon: "/icon.svg",
-            badge: "/icon.svg",
-          });
-        } catch {
-          // notification failed silently
-        }
-      }, step.delay);
-    });
+    const ok = await ensureNotifyPermission();
+    setState(ok ? "on" : "denied");
   }
 
-  if (state === "scheduled") {
+  if (state === "on") {
     return (
       <div className="flex items-center gap-2 text-xs font-medium text-green-600 dark:text-green-400">
         <Check className="w-3.5 h-3.5" />
-        Notifications on — watch for delivery pings! 🔔
+        Delivery alerts on — we&apos;ll ping you 🔔
       </div>
     );
   }
@@ -51,7 +33,7 @@ export function DeliveryNotifyButton({ productName }: { productName?: string }) 
   if (state === "denied") {
     return (
       <p className="text-xs text-gray-400">
-        Notifications are blocked. Enable them in your browser to get delivery pings.
+        Notifications are blocked. Enable them in your browser settings to get delivery pings.
       </p>
     );
   }
