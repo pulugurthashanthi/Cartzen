@@ -46,30 +46,28 @@ export function TodaysDeals() {
   if (deals.length === 0) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-6">
+    <section className="max-w-6xl mx-auto px-4 py-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-rose-500 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white fill-white" />
+          <div className="w-6 h-6 rounded-lg bg-rose-500 flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white fill-white" />
           </div>
-          <div>
-            <h2 className="font-display text-xl font-bold text-gray-900 dark:text-gray-100">
-              Today&apos;s Deals
-            </h2>
-          </div>
+          <h2 className="font-display text-base font-bold text-gray-900 dark:text-gray-100">
+            Today&apos;s Deals
+          </h2>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-gray-900 dark:bg-gray-800 text-white rounded-xl px-3 py-1.5">
-          <span className="text-xs text-gray-400">Ends in</span>
-          <span className="font-mono font-bold text-sm text-rose-400">
+        <div className="flex items-center gap-1.5 bg-gray-900 dark:bg-gray-800 text-white rounded-lg px-2.5 py-1">
+          <span className="text-[10px] text-gray-400">Ends in</span>
+          <span className="font-mono font-bold text-xs text-rose-400">
             {pad(h)}:{pad(m)}:{pad(s)}
           </span>
         </div>
       </div>
 
       {/* Deals row */}
-      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
         {deals.map((product) => (
           <Link
             key={product.id}

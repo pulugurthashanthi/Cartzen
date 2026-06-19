@@ -45,18 +45,16 @@ export function RecommendedRow() {
   if (recommended.length < 3) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-5 h-5 text-fuchsia-500" />
-        <div>
-          <h2 className="font-display text-xl font-bold text-gray-900 dark:text-gray-100">
-            Recommended For You
-          </h2>
-          <p className="text-xs text-gray-400">Based on your browsing</p>
-        </div>
+    <section className="max-w-6xl mx-auto px-4 py-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="w-4 h-4 text-fuchsia-500" />
+        <h2 className="font-display text-base font-bold text-gray-900 dark:text-gray-100">
+          Recommended For You
+        </h2>
+        <span className="text-xs text-gray-400">· based on your browsing</span>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
+      <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
         {recommended.map((product) => (
           <Link
             key={product.id}
