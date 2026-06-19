@@ -1,17 +1,66 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { products, categories } from "@/data/products";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { products as staticProducts, categories } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/types";
+
+function normalizeFirestoreProduct(doc: Record<string, unknown>, index: number): Product {
+  return {
+    id: doc.id as string,
+    name: (doc.name as string) ?? "",
+    brand: (doc.brand as string) ?? "",
+    price: Number(doc.price) ?? 0,
+    originalPrice: undefined,
+    discount: undefined,
+    rating: 4.0,
+    reviewCount: 0,
+    image: (doc.image as string) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+    images: [(doc.image as string) || ""],
+    category: (doc.category as string) ?? "electronics",
+    subcategory: "",
+    description: (doc.description as string) ?? "",
+    features: [],
+    inStock: (doc.inStock as boolean) ?? true,
+    badge: index < 3 ? "new" : undefined,
+    tags: [(doc.category as string) ?? ""],
+  };
+}
 
 export function ProductGrid() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortBy, setSortBy] = useState<"relevance" | "price_asc" | "price_desc" | "rating">("relevance");
+  const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function fetchFirestore() {
+      try {
+        const snap = await getDocs(
+          query(collection(db, "products"), orderBy("createdAt", "desc"))
+        );
+        const docs = snap.docs.map((d, i) =>
+          normalizeFirestoreProduct({ id: d.id, ...d.data() }, i)
+        );
+        setFirestoreProducts(docs);
+      } catch {
+        // Firestore unavailable — proceed with static data only
+      }
+    }
+    fetchFirestore();
+  }, []);
+
+  const allProducts = useMemo(() => {
+    // Firestore products shown first (admin-added), then static catalogue
+    const fsIds = new Set(firestoreProducts.map((p) => p.id));
+    return [...firestoreProducts, ...staticProducts.filter((p) => !fsIds.has(p.id))];
+  }, [firestoreProducts]);
 
   const filtered = useMemo(() => {
-    let list = [...products];
+    let list = [...allProducts];
 
     if (activeCategory !== "all") {
       list = list.filter((p) => p.category === activeCategory);
@@ -33,7 +82,7 @@ export function ProductGrid() {
     else if (sortBy === "rating") list.sort((a, b) => b.rating - a.rating);
 
     return list;
-  }, [search, activeCategory, sortBy]);
+  }, [allProducts, search, activeCategory, sortBy]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -81,6 +130,11 @@ export function ProductGrid() {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {filtered.length} product{filtered.length !== 1 ? "s" : ""}
           {search && ` for "${search}"`}
+          {firestoreProducts.length > 0 && (
+            <span className="ml-2 text-xs text-zen-500">
+              ({firestoreProducts.length} from catalogue)
+            </span>
+          )}
         </p>
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-gray-400" />
