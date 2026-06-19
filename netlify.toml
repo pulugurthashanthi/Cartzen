@@ -2,8 +2,5 @@
   command = "npm run build"
   publish = ".next"
 
-[build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_FIREBASE_API_KEY,NEXT_PUBLIC_FIREBASE_APP_ID"
-
 [[plugins]]
   package = "@netlify/plugin-nextjs"
