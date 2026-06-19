@@ -2,3 +2,5 @@ node_modules/
 .next/ 
 chat.txt
 .env.local
+env.txt
+*.tsbuildinfo
