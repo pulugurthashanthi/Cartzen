@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ShoppingCart,
@@ -13,9 +14,13 @@ import {
   Leaf,
   Menu,
   X,
+  Shield,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -30,6 +35,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
+  const { user, isAdmin, signIn, signOut, loading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -76,6 +82,20 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  pathname === "/admin"
+                    ? "bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                )}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </div>
 
           {/* Right actions */}
@@ -100,6 +120,38 @@ export function Navbar() {
                 </span>
               )}
             </Link>
+
+            {!loading && (
+              user ? (
+                <div className="flex items-center gap-2">
+                  {user.photoURL && (
+                    <Image
+                      src={user.photoURL}
+                      alt={user.displayName ?? "User"}
+                      width={28}
+                      height={28}
+                      className="rounded-full border border-gray-200 dark:border-gray-700"
+                    />
+                  )}
+                  <button
+                    onClick={signOut}
+                    className="btn-ghost p-2.5"
+                    aria-label="Sign out"
+                    title="Sign out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={signIn}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium zen-gradient text-white hover:opacity-90 transition-opacity"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Sign in
+                </button>
+              )
+            )}
 
             {/* Mobile menu toggle */}
             <button
@@ -135,6 +187,21 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors mb-1",
+                  pathname === "/admin"
+                    ? "bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                )}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </div>
         )}
       </nav>
