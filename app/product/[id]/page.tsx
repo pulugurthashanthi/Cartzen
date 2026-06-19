@@ -15,6 +15,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useDreamVault } from "@/hooks/useDreamVault";
 import { recentlyViewedStorage } from "@/lib/storage";
+import { trackChallenge } from "@/lib/track";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product, DreamVaultCategory } from "@/types";
 
@@ -171,6 +172,7 @@ export default function ProductPage() {
     if (!params.id) return;
     setRecentIds(recentlyViewedStorage.get().filter((id) => id !== params.id));
     recentlyViewedStorage.add(params.id as string);
+    trackChallenge("browse");
   }, [params.id]);
 
   if (loadingProduct) {

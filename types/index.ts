@@ -125,12 +125,55 @@ export interface RewardDrop {
   rewards: Reward[];
 }
 
+export type ChallengeMetric =
+  | "browse"
+  | "wishlist"
+  | "cooldown_add"
+  | "cooldown_resist"
+  | "checkout"
+  | "open_box";
+
+export interface DailyChallengeDef {
+  id: string;
+  label: string;
+  emoji: string;
+  goal: number;
+  metric: ChallengeMetric;
+  rewardCoins: number;
+  rewardXp: number;
+}
+
+export interface EngagementState {
+  // Mindful streak — consecutive days the app was opened
+  streakCurrent: number;
+  streakLongest: number;
+  lastActiveDate: string; // YYYY-MM-DD
+  // Daily reward box
+  dailyBoxLastClaimed: string; // YYYY-MM-DD
+  // Login / weekly rewards
+  lastLoginDate: string; // YYYY-MM-DD
+  loginDayIndex: number; // position in the 7-day login calendar
+  weeklyLastClaimed: string; // ISO week key e.g. 2026-W25
+  // Daily challenges
+  challengeDate: string; // YYYY-MM-DD the current set belongs to
+  challengeProgress: Partial<Record<ChallengeMetric, number>>;
+  challengeClaimed: string[]; // challenge ids claimed today
+}
+
+export interface StoreState {
+  owned: string[]; // cosmetic ids purchased
+  activeBoxSkin: string;
+  activeTitle: string;
+}
+
 export interface RewardsState {
-  zenPoints: number;
+  zenPoints: number; // spendable "Zen Coins"
   xp: number;
   savingsCoins: number;
   badges: string[];
   history: RewardDrop[];
+  engagement: EngagementState;
+  store: StoreState;
 }
 
 // Journal

@@ -10,6 +10,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { formatPrice, cn } from "@/lib/utils";
 import { generateTherapistInsight } from "@/lib/therapist";
 import { lootClaimStorage } from "@/lib/storage";
+import { trackChallenge } from "@/lib/track";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 
 const FUNNY_LINES = [
@@ -47,6 +48,7 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     if (!orderId || lootClaimStorage.has(orderId)) return;
     lootClaimStorage.add(orderId);
+    trackChallenge("checkout");
     const t = setTimeout(() => setShowLoot(true), 1000);
     return () => clearTimeout(t);
   }, [orderId]);

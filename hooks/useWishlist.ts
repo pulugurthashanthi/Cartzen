@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { wishlistStorage } from "@/lib/storage";
+import { trackChallenge } from "@/lib/track";
 import type { WishlistItem, Product } from "@/types";
 
 const WISHLIST_EVENT = "cartzen:wishlist-changed";
@@ -34,6 +35,7 @@ export function useWishlist() {
       { productId: product.id, product, addedAt: new Date().toISOString() },
       ...current,
     ]);
+    trackChallenge("wishlist");
   }, []);
 
   const removeItem = useCallback((productId: string) => {
@@ -50,6 +52,7 @@ export function useWishlist() {
       { productId: product.id, product, addedAt: new Date().toISOString() },
       ...current,
     ]);
+    trackChallenge("wishlist");
     return true;
   }, []);
 

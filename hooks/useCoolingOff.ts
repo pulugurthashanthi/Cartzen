@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { coolingOffStorage } from "@/lib/storage";
+import { trackChallenge } from "@/lib/track";
 import type { CoolingOffItem, Product, ShoppingReason } from "@/types";
 
 export function useCoolingOff() {
@@ -30,6 +31,7 @@ export function useCoolingOff() {
         coolingOffStorage.set(next);
         return next;
       });
+      trackChallenge("cooldown_add");
     },
     []
   );
@@ -59,6 +61,7 @@ export function useCoolingOff() {
         coolingOffStorage.set(next);
         return next;
       });
+      if (!stillWanted) trackChallenge("cooldown_resist");
     },
     []
   );

@@ -6,6 +6,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ToastContainer } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/PWARegister";
 import { SyncProvider } from "@/components/SyncProvider";
+import { EngagementBootstrap } from "@/components/engagement/EngagementBootstrap";
 
 export const metadata: Metadata = {
   title: "CartZen — Shop Without Spending",
@@ -39,6 +40,7 @@ export default function RootLayout({
             <ToastContainer />
             <PWARegister />
             <SyncProvider />
+            <EngagementBootstrap />
           </CartProvider>
         </AuthProvider>
       </body>

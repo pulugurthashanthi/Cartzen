@@ -20,6 +20,7 @@ import {
   Sparkles,
   Heart,
   Gift,
+  ShoppingBag,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/contexts/CartContext";
@@ -32,6 +33,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Savings", icon: BarChart2 },
   { href: "/rewards", label: "Rewards", icon: Gift },
+  { href: "/store", label: "Store", icon: ShoppingBag },
   { href: "/orders", label: "Orders", icon: Package },
   { href: "/dream-vault", label: "Dream Vault", icon: Sparkles },
   { href: "/cooling-off", label: "Cooling-Off", icon: Snowflake },

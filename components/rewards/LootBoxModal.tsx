@@ -4,6 +4,7 @@ import { Gift, X } from "lucide-react";
 import { useRewards } from "@/hooks/useRewards";
 import { RARITIES, getBadge } from "@/lib/rewards";
 import { sound } from "@/lib/sound";
+import { trackChallenge } from "@/lib/track";
 import { Confetti } from "@/components/ui/Confetti";
 import { cn } from "@/lib/utils";
 import type { RewardDrop } from "@/types";
@@ -12,6 +13,12 @@ type Phase = "sealed" | "opening" | "revealed";
 
 interface Props {
   onClose: () => void;
+  // If provided, the box reveals this pre-rolled drop and does NOT claim it
+  // (caller already applied rewards). Otherwise the box rolls + claims itself.
+  drop?: RewardDrop;
+  // Optional gradient (Tailwind classes) for the sealed/opening box skin.
+  skinGradient?: string;
+  title?: string;
 }
 
 // Pre-computed particle vectors for the burst effect.
@@ -33,29 +40,33 @@ function useParticles(count: number) {
   }, [count]);
 }
 
-export function LootBoxModal({ onClose }: Props) {
+export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title }: Props) {
   const { rollDrop, claimDrop } = useRewards();
   const [phase, setPhase] = useState<Phase>("sealed");
-  const [drop, setDrop] = useState<RewardDrop | null>(null);
+  const [drop, setDrop] = useState<RewardDrop | null>(providedDrop ?? null);
   const particles = useParticles(28);
+  const boxGradient = skinGradient || "zen-gradient";
+  const skinClass = skinGradient ? `bg-gradient-to-br ${skinGradient}` : "zen-gradient";
 
   const rarityCfg = drop ? RARITIES[drop.rarity] : RARITIES.common;
   const isBigWin = drop?.rarity === "epic" || drop?.rarity === "legendary";
 
   const handleOpen = useCallback(() => {
     if (phase !== "sealed") return;
-    const rolled = rollDrop();
+    // Reveal-only mode: caller pre-rolled and already applied the drop.
+    const rolled = providedDrop ?? rollDrop();
     setDrop(rolled);
     setPhase("opening");
     sound.open();
+    trackChallenge("open_box");
 
-    // After the opening animation, reveal + claim.
     setTimeout(() => {
       setPhase("revealed");
       sound.reveal(rolled.rarity);
-      claimDrop(rolled);
+      if (!providedDrop) claimDrop(rolled);
     }, 1200);
-  }, [phase, rollDrop, claimDrop]);
+  }, [phase, rollDrop, claimDrop, providedDrop]);
+  void boxGradient;
 
   // Esc to close once revealed
   useEffect(() => {
@@ -100,7 +111,7 @@ export function LootBoxModal({ onClose }: Props) {
         {phase === "sealed" && (
           <div className="text-center">
             <p className="text-white/70 text-sm font-medium mb-2 animate-fade-in">
-              You earned a mystery reward!
+              {title ?? "You earned a mystery reward!"}
             </p>
             <h2 className="text-white font-display text-2xl font-bold mb-8 animate-fade-in">
               Tap to open your loot box 🎁
@@ -112,9 +123,9 @@ export function LootBoxModal({ onClose }: Props) {
               aria-label="Open loot box"
             >
               {/* Glow */}
-              <div className="absolute inset-0 zen-gradient rounded-3xl blur-2xl glow-pulse" />
+              <div className={cn("absolute inset-0 rounded-3xl blur-2xl glow-pulse", skinClass)} />
               {/* Box */}
-              <div className="relative loot-float w-40 h-40 mx-auto rounded-3xl zen-gradient flex items-center justify-center shadow-2xl group-active:scale-95 transition-transform">
+              <div className={cn("relative loot-float w-40 h-40 mx-auto rounded-3xl flex items-center justify-center shadow-2xl group-active:scale-95 transition-transform", skinClass)}>
                 <Gift className="w-20 h-20 text-white drop-shadow-lg" />
               </div>
             </button>
@@ -157,7 +168,7 @@ export function LootBoxModal({ onClose }: Props) {
               />
             ))}
             {/* Shaking box */}
-            <div className="relative loot-shake w-36 h-36 rounded-3xl zen-gradient flex items-center justify-center shadow-2xl">
+            <div className={cn("relative loot-shake w-36 h-36 rounded-3xl flex items-center justify-center shadow-2xl", skinClass)}>
               <Gift className="w-16 h-16 text-white" />
             </div>
           </div>

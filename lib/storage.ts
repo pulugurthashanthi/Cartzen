@@ -21,13 +21,30 @@ const KEYS = {
   REWARDS: "cartzen_rewards",
 } as const;
 
+import { EMPTY_ENGAGEMENT, EMPTY_STORE } from "@/lib/engagement";
+
 const EMPTY_REWARDS: RewardsState = {
   zenPoints: 0,
   xp: 0,
   savingsCoins: 0,
   badges: [],
   history: [],
+  engagement: EMPTY_ENGAGEMENT,
+  store: EMPTY_STORE,
 };
+
+// Backfill new fields for users with older saved state.
+function normalizeRewards(r: Partial<RewardsState>): RewardsState {
+  return {
+    zenPoints: r.zenPoints ?? 0,
+    xp: r.xp ?? 0,
+    savingsCoins: r.savingsCoins ?? 0,
+    badges: r.badges ?? [],
+    history: r.history ?? [],
+    engagement: { ...EMPTY_ENGAGEMENT, ...(r.engagement ?? {}) },
+    store: { ...EMPTY_STORE, ...(r.store ?? {}) },
+  };
+}
 
 function safeGet<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -121,7 +138,7 @@ export const recentlyViewedStorage = {
 
 // Rewards (loot box game state)
 export const rewardsStorage = {
-  get: (): RewardsState => safeGet(KEYS.REWARDS, EMPTY_REWARDS),
+  get: (): RewardsState => normalizeRewards(safeGet<Partial<RewardsState>>(KEYS.REWARDS, {})),
   set: (state: RewardsState) => safeSet(KEYS.REWARDS, state),
 };
 

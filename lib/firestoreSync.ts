@@ -11,6 +11,7 @@ import {
   dreamVaultStorage,
   rewardsStorage,
 } from "@/lib/storage";
+import { EMPTY_ENGAGEMENT, EMPTY_STORE } from "@/lib/engagement";
 import type { CartItem, CoolingOffItem, Order, JournalEntry, WishlistItem, DreamVaultItem, RewardsState } from "@/types";
 
 interface FirestoreSnapshot {
@@ -120,6 +121,32 @@ export async function pullAndMerge(uid: string): Promise<boolean> {
     const remoteRewards = remote.rewards ?? localRewards;
     const historyMap = new Map<string, (typeof localRewards.history)[number]>();
     [...remoteRewards.history, ...localRewards.history].forEach((d) => historyMap.set(d.id, d));
+
+    // Engagement: primary = whichever was active more recently; keep best streak + latest claim dates
+    const le = { ...EMPTY_ENGAGEMENT, ...(localRewards.engagement ?? {}) };
+    const re = { ...EMPTY_ENGAGEMENT, ...(remoteRewards.engagement ?? {}) };
+    const primary = re.lastActiveDate >= le.lastActiveDate ? re : le;
+    const maxStr = (a: string, b: string) => (a >= b ? a : b);
+    const mergedEngagement = {
+      ...primary,
+      streakLongest: Math.max(le.streakLongest, re.streakLongest),
+      streakCurrent: primary.streakCurrent,
+      dailyBoxLastClaimed: maxStr(le.dailyBoxLastClaimed, re.dailyBoxLastClaimed),
+      lastLoginDate: maxStr(le.lastLoginDate, re.lastLoginDate),
+      loginDayIndex: Math.max(le.loginDayIndex, re.loginDayIndex),
+      weeklyLastClaimed: maxStr(le.weeklyLastClaimed, re.weeklyLastClaimed),
+    };
+
+    // Store: union owned cosmetics, active from the more recently active device
+    const ls = { ...EMPTY_STORE, ...(localRewards.store ?? {}) };
+    const rs = { ...EMPTY_STORE, ...(remoteRewards.store ?? {}) };
+    const storePrimary = primary === re ? rs : ls;
+    const mergedStore = {
+      owned: [...new Set([...ls.owned, ...rs.owned])],
+      activeBoxSkin: storePrimary.activeBoxSkin,
+      activeTitle: storePrimary.activeTitle,
+    };
+
     const mergedRewards: RewardsState = {
       zenPoints: Math.max(localRewards.zenPoints, remoteRewards.zenPoints),
       xp: Math.max(localRewards.xp, remoteRewards.xp),
@@ -128,6 +155,8 @@ export async function pullAndMerge(uid: string): Promise<boolean> {
       history: [...historyMap.values()]
         .sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime())
         .slice(0, 100),
+      engagement: mergedEngagement,
+      store: mergedStore,
     };
 
     // Write merged data back to localStorage
