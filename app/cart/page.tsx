@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Trash2,
   Plus,
@@ -10,15 +9,54 @@ import {
   ShoppingBag,
   ArrowRight,
   Tag,
-  Sparkles,
+  Check,
+  X,
+  PlusCircle,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { CartBuddy } from "@/components/ui/CartBuddy";
+import { products as allProducts } from "@/data/products";
+import { showToast } from "@/components/ui/Toast";
 import { formatPrice, cn } from "@/lib/utils";
 
+// Coupons all "work" — because the total is ₹0 anyway. The joke is the point.
+const COUPONS: Record<string, string> = {
+  SAVE100: "₹100 off! On ₹0. You now owe us −₹100. Just kidding. 🎉",
+  BROKE50: "50% off nothing is still nothing. Math checks out. 🧮",
+  IMPULSE0: "Impulse neutralised. Discount: 100%. Always was. 😌",
+  TREATYOURSELF: "Treat unlocked! It's free. It was always free. 💝",
+  ZENMODE: "Zen mode activated. Inner peace: +10. Wallet: untouched. 🧘",
+};
+
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, total, clearCart } = useCart();
-  const router = useRouter();
+  const { items, updateQuantity, removeItem, total, clearCart, addItem } = useCart();
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; message: string } | null>(null);
+  const [couponError, setCouponError] = useState("");
+
+  // Frequently bought together — products in the same categories as cart items
+  const suggestions = useMemo(() => {
+    if (items.length === 0) return [];
+    const cartIds = new Set(items.map((i) => i.productId));
+    const cartCategories = new Set(items.map((i) => i.product.category));
+    return allProducts
+      .filter((p) => cartCategories.has(p.category) && !cartIds.has(p.id))
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 4);
+  }, [items]);
+
+  function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    if (COUPONS[code]) {
+      setAppliedCoupon({ code, message: COUPONS[code] });
+      setCouponError("");
+      setCouponInput("");
+    } else {
+      setCouponError(`"${code}" isn't real. Then again, neither is this store. Try SAVE100 😉`);
+      setAppliedCoupon(null);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -127,6 +165,36 @@ export default function CartPage() {
               </button>
             </div>
           ))}
+
+          {/* Frequently bought together */}
+          {suggestions.length > 0 && (
+            <div className="card p-5">
+              <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">
+                Frequently bought together
+              </h3>
+              <p className="text-xs text-gray-400 mb-4">
+                People who didn&apos;t buy this also didn&apos;t buy these. 🤝
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {suggestions.map((p) => (
+                  <div key={p.id} className="group">
+                    <Link href={`/product/${p.id}`} className="block relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 mb-2">
+                      <Image src={p.image} alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="150px" />
+                    </Link>
+                    <p className="text-xs font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{p.name}</p>
+                    <p className="text-xs font-bold mb-2">{formatPrice(p.price)}</p>
+                    <button
+                      onClick={() => { addItem(p); showToast(`Added "${p.name}" 🛒`); }}
+                      className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold bg-zen-50 dark:bg-zen-950/40 text-zen-700 dark:text-zen-400 hover:bg-zen-100 dark:hover:bg-zen-900/50 transition-colors"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Order summary */}
@@ -142,6 +210,48 @@ export default function CartPage() {
 
           <div className="card p-5 space-y-4">
             <h2 className="font-semibold text-gray-900 dark:text-gray-100">Order Summary</h2>
+
+            {/* Coupon */}
+            <div>
+              {appliedCoupon ? (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
+                  <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-green-700 dark:text-green-400">
+                      {appliedCoupon.code} applied
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">{appliedCoupon.message}</p>
+                  </div>
+                  <button onClick={() => setAppliedCoupon(null)} className="text-green-500 hover:text-green-700">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Coupon code"
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
+                        onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                        className="input pl-9 text-sm py-2 uppercase"
+                      />
+                    </div>
+                    <button
+                      onClick={applyCoupon}
+                      className="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:opacity-90 transition-opacity"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {couponError && <p className="text-xs text-rose-500 mt-1.5">{couponError}</p>}
+                  <p className="text-[11px] text-gray-400 mt-1.5">Psst: every code works. Try SAVE100, ZENMODE, IMPULSE0 😉</p>
+                </>
+              )}
+            </div>
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
