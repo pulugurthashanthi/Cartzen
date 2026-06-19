@@ -98,9 +98,12 @@ export interface CoolingOffItem {
   productId: string;
   product: Product;
   addedAt: string;
+  trigger?: ShoppingReason;
+  coolOffDays?: 1 | 7 | 30;
   checkedAt?: string;
   stillWanted?: boolean;
   urgeDisappeared?: boolean;
+  reflection?: string;
 }
 
 // Journal
