@@ -156,6 +156,11 @@ export default function CheckoutSuccessPage() {
             <ShoppingBag className="w-4 h-4" />
             View All Orders
           </Link>
+          {order && (
+            <Link href={`/invoice/${order.id}`} className="btn-secondary w-full">
+              🧾 Download ₹0.00 Invoice
+            </Link>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <Link href="/dashboard" className="btn-ghost w-full text-sm">
               <BarChart2 className="w-4 h-4" /> Savings

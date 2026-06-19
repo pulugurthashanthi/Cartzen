@@ -327,6 +327,12 @@ export default function TrackingPage() {
             </div>
           ))}
         </div>
+        <Link
+          href={`/invoice/${order.id}`}
+          className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-zen-400 hover:text-zen-600 dark:hover:text-zen-400 transition-colors"
+        >
+          🧾 View ₹0.00 Invoice
+        </Link>
       </div>
     </div>
   );
