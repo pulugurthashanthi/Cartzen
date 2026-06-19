@@ -15,7 +15,7 @@ export function useOrders() {
   }, []);
 
   const placeOrder = useCallback(
-    (items: CartItem[], journalEntry?: JournalEntry): Order => {
+    (items: CartItem[], journalEntry?: JournalEntry, deliveryAddress?: string): Order => {
       const total = items.reduce(
         (sum, i) => sum + i.product.price * i.quantity,
         0
@@ -29,7 +29,7 @@ export function useOrders() {
         statusHistory: [
           { status: "placed", timestamp: new Date().toISOString() },
         ],
-        deliveryAddress: "123 Zen Street, Calm Nagar, Bangalore 560001",
+        deliveryAddress: deliveryAddress ?? "123 Zen Street, Calm Nagar, Bangalore 560001",
         journalEntry,
       };
 
