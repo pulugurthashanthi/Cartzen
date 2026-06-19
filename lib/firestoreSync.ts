@@ -9,8 +9,9 @@ import {
   wishlistStorage,
   recentlyViewedStorage,
   dreamVaultStorage,
+  rewardsStorage,
 } from "@/lib/storage";
-import type { CartItem, CoolingOffItem, Order, JournalEntry, WishlistItem, DreamVaultItem } from "@/types";
+import type { CartItem, CoolingOffItem, Order, JournalEntry, WishlistItem, DreamVaultItem, RewardsState } from "@/types";
 
 interface FirestoreSnapshot {
   cart: CartItem[];
@@ -21,6 +22,7 @@ interface FirestoreSnapshot {
   wishlist: WishlistItem[];
   recentlyViewed: string[];
   dreamVault: DreamVaultItem[];
+  rewards: RewardsState;
   syncedAt: string;
 }
 
@@ -39,6 +41,7 @@ export function readLocalSnapshot(): Omit<FirestoreSnapshot, "syncedAt"> {
     wishlist: wishlistStorage.get(),
     recentlyViewed: recentlyViewedStorage.get(),
     dreamVault: dreamVaultStorage.get(),
+    rewards: rewardsStorage.get(),
   };
 }
 
@@ -112,6 +115,21 @@ export async function pullAndMerge(uid: string): Promise<boolean> {
       if (!rvSeen.has(id)) { rvSeen.add(id); mergedRV.push(id); }
     });
 
+    // Rewards: take higher counters, union badges, union history by drop id
+    const localRewards = local.rewards ?? rewardsStorage.get();
+    const remoteRewards = remote.rewards ?? localRewards;
+    const historyMap = new Map<string, (typeof localRewards.history)[number]>();
+    [...remoteRewards.history, ...localRewards.history].forEach((d) => historyMap.set(d.id, d));
+    const mergedRewards: RewardsState = {
+      zenPoints: Math.max(localRewards.zenPoints, remoteRewards.zenPoints),
+      xp: Math.max(localRewards.xp, remoteRewards.xp),
+      savingsCoins: Math.max(localRewards.savingsCoins, remoteRewards.savingsCoins),
+      badges: [...new Set([...localRewards.badges, ...remoteRewards.badges])],
+      history: [...historyMap.values()]
+        .sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime())
+        .slice(0, 100),
+    };
+
     // Write merged data back to localStorage
     ordersStorage.set(mergedOrders);
     journalStorage.set(mergedJournal);
@@ -119,6 +137,7 @@ export async function pullAndMerge(uid: string): Promise<boolean> {
     wishlistStorage.set([...wishMap.values()]);
     coolingOffStorage.set([...coolMap.values()]);
     dreamVaultStorage.set([...vaultMap.values()]);
+    rewardsStorage.set(mergedRewards);
     savingsStorage.reset();
     // Re-add savings as a raw set (reset doesn't write the merged value)
     if (typeof window !== "undefined") {

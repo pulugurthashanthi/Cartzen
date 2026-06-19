@@ -9,6 +9,8 @@ import {
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice, cn } from "@/lib/utils";
 import { generateTherapistInsight } from "@/lib/therapist";
+import { lootClaimStorage } from "@/lib/storage";
+import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 
 const FUNNY_LINES = [
   "Your imaginary package is in imaginary transit. The tracking is very real though.",
@@ -31,7 +33,9 @@ export default function CheckoutSuccessPage() {
   const router = useRouter();
   const { getOrder, savings, orders, refreshOrders } = useOrders();
   const [show, setShow] = useState(false);
+  const [showLoot, setShowLoot] = useState(false);
   const [deliveryDate] = useState(getDeliveryDate);
+  const orderId = params.id as string;
 
   useEffect(() => {
     refreshOrders();
@@ -39,7 +43,15 @@ export default function CheckoutSuccessPage() {
     return () => clearTimeout(t);
   }, []);
 
-  const order = getOrder(params.id as string);
+  // Grant a loot box once per order — auto-opens after the success page renders.
+  useEffect(() => {
+    if (!orderId || lootClaimStorage.has(orderId)) return;
+    lootClaimStorage.add(orderId);
+    const t = setTimeout(() => setShowLoot(true), 1000);
+    return () => clearTimeout(t);
+  }, [orderId]);
+
+  const order = getOrder(orderId);
   const [funnyLine] = useState(() => FUNNY_LINES[Math.floor(Math.random() * FUNNY_LINES.length)]);
 
   const therapistInsight = order?.journalEntry?.reason
@@ -59,6 +71,7 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-green-950/20 dark:to-gray-950 px-4 py-10">
+      {showLoot && <LootBoxModal onClose={() => setShowLoot(false)} />}
       <div className={`max-w-lg mx-auto transition-all duration-700 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
 
         {/* Success banner */}
@@ -182,12 +195,15 @@ export default function CheckoutSuccessPage() {
               🧾 Download ₹0.00 Invoice
             </Link>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <Link href="/rewards" className="btn-ghost w-full text-sm">
+              🎁 Rewards
+            </Link>
             <Link href="/dashboard" className="btn-ghost w-full text-sm">
               <BarChart2 className="w-4 h-4" /> Savings
             </Link>
             <Link href="/" className="btn-ghost w-full text-sm">
-              🛍️ Shop More
+              🛍️ Shop
             </Link>
           </div>
         </div>

@@ -5,6 +5,7 @@ import type {
   JournalEntry,
   DreamVaultItem,
   WishlistItem,
+  RewardsState,
 } from "@/types";
 
 const KEYS = {
@@ -17,7 +18,16 @@ const KEYS = {
   DREAM_VAULT: "cartzen_dream_vault",
   WISHLIST: "cartzen_wishlist",
   RECENTLY_VIEWED: "cartzen_recently_viewed",
+  REWARDS: "cartzen_rewards",
 } as const;
+
+const EMPTY_REWARDS: RewardsState = {
+  zenPoints: 0,
+  xp: 0,
+  savingsCoins: 0,
+  badges: [],
+  history: [],
+};
 
 function safeGet<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -106,5 +116,21 @@ export const recentlyViewedStorage = {
     const existing = recentlyViewedStorage.get();
     const updated = [productId, ...existing.filter((id) => id !== productId)].slice(0, 12);
     safeSet(KEYS.RECENTLY_VIEWED, updated);
+  },
+};
+
+// Rewards (loot box game state)
+export const rewardsStorage = {
+  get: (): RewardsState => safeGet(KEYS.REWARDS, EMPTY_REWARDS),
+  set: (state: RewardsState) => safeSet(KEYS.REWARDS, state),
+};
+
+// Tracks which order IDs have already granted a loot box (prevents refresh abuse)
+const LOOT_CLAIMED_KEY = "cartzen_loot_claimed";
+export const lootClaimStorage = {
+  has: (orderId: string): boolean => safeGet<string[]>(LOOT_CLAIMED_KEY, []).includes(orderId),
+  add: (orderId: string) => {
+    const existing = safeGet<string[]>(LOOT_CLAIMED_KEY, []);
+    if (!existing.includes(orderId)) safeSet(LOOT_CLAIMED_KEY, [orderId, ...existing].slice(0, 200));
   },
 };

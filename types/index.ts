@@ -106,6 +106,33 @@ export interface CoolingOffItem {
   reflection?: string;
 }
 
+// Rewards / Loot Box
+export type RewardRarity = "common" | "rare" | "epic" | "legendary";
+export type RewardKind = "zen" | "xp" | "coins" | "badge";
+
+export interface Reward {
+  kind: RewardKind;
+  amount?: number;
+  badgeId?: string;
+  label: string;
+  emoji: string;
+}
+
+export interface RewardDrop {
+  id: string;
+  openedAt: string;
+  rarity: RewardRarity;
+  rewards: Reward[];
+}
+
+export interface RewardsState {
+  zenPoints: number;
+  xp: number;
+  savingsCoins: number;
+  badges: string[];
+  history: RewardDrop[];
+}
+
 // Journal
 export type ShoppingReason =
   | "bored"
