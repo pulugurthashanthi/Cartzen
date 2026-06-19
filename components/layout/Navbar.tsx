@@ -18,10 +18,12 @@ import {
   LogIn,
   LogOut,
   Sparkles,
+  Heart,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWishlist } from "@/hooks/useWishlist";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -37,6 +39,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { itemCount } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const { user, isAdmin, signIn, signOut, loading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -113,6 +116,15 @@ export function Navbar() {
                 <Moon className="w-4 h-4" />
               )}
             </button>
+
+            <Link href="/wishlist" className="relative btn-ghost p-2.5" aria-label="Wishlist">
+              <Heart className={cn("w-4 h-4", wishlistItems.length > 0 && "fill-rose-500 text-rose-500")} />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-rose-500 flex items-center justify-center text-[10px] font-bold text-white animate-fade-in">
+                  {wishlistItems.length > 9 ? "9+" : wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
             <Link href="/cart" className="relative btn-ghost p-2.5">
               <ShoppingCart className="w-4 h-4" />

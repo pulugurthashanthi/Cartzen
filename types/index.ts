@@ -86,6 +86,13 @@ export interface DreamVaultItem {
   addedAt: string;
 }
 
+// Wishlist
+export interface WishlistItem {
+  productId: string;
+  product: Product;
+  addedAt: string;
+}
+
 // Cooling-Off List
 export interface CoolingOffItem {
   productId: string;

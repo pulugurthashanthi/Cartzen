@@ -14,6 +14,7 @@ import { products, reviews } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useDreamVault } from "@/hooks/useDreamVault";
+import { recentlyViewedStorage } from "@/lib/storage";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product, DreamVaultCategory } from "@/types";
 
@@ -101,22 +102,6 @@ function getDeliveryDate() {
   return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
 }
 
-// ─── Recently viewed ─────────────────────────────────────────────────────────
-function trackRecentlyViewed(productId: string) {
-  try {
-    const key = "cartzen_recently_viewed";
-    const existing: string[] = JSON.parse(localStorage.getItem(key) || "[]");
-    const updated = [productId, ...existing.filter((id) => id !== productId)].slice(0, 8);
-    localStorage.setItem(key, JSON.stringify(updated));
-  } catch { /* ignore */ }
-}
-
-function getRecentlyViewed(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem("cartzen_recently_viewed") || "[]");
-  } catch { return []; }
-}
-
 // ─── Firestore normaliser ─────────────────────────────────────────────────────
 function normalizeFirestoreProduct(id: string, data: Record<string, unknown>): Product {
   return {
@@ -184,8 +169,8 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (!params.id) return;
-    trackRecentlyViewed(params.id as string);
-    setRecentIds(getRecentlyViewed().filter((id) => id !== params.id));
+    setRecentIds(recentlyViewedStorage.get().filter((id) => id !== params.id));
+    recentlyViewedStorage.add(params.id as string);
   }, [params.id]);
 
   if (loadingProduct) {

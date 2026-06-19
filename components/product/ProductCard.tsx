@@ -2,9 +2,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, ShoppingCart, Snowflake, Check } from "lucide-react";
+import { Star, ShoppingCart, Snowflake, Check, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
+import { useWishlist } from "@/hooks/useWishlist";
 import { showToast } from "@/components/ui/Toast";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -25,8 +26,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const router = useRouter();
   const { addItem, items } = useCart();
   const { addItem: addToCooling, isInCoolingOff } = useCoolingOff();
+  const { toggle: toggleWishlist, isWishlisted } = useWishlist();
   const inCart = items.some((i) => i.productId === product.id);
   const inCooling = isInCoolingOff(product.id);
+  const wishlisted = isWishlisted(product.id);
 
   return (
     <div
@@ -57,6 +60,25 @@ export function ProductCard({ product, className }: ProductCardProps) {
             {product.discount}% OFF
           </span>
         )}
+
+        {/* Wishlist heart */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const added = toggleWishlist(product);
+            showToast(added ? `❤️ Saved "${product.name}" to wishlist` : `Removed from wishlist`);
+          }}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={cn(
+            "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-90",
+            wishlisted
+              ? "bg-white/90 dark:bg-gray-900/90 text-rose-500"
+              : "bg-white/70 dark:bg-gray-900/70 text-gray-400 hover:text-rose-500"
+          )}
+        >
+          <Heart className={cn("w-4 h-4 transition-all", wishlisted && "fill-rose-500")} />
+        </button>
       </Link>
 
       {/* Content */}

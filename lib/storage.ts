@@ -4,6 +4,7 @@ import type {
   Order,
   JournalEntry,
   DreamVaultItem,
+  WishlistItem,
 } from "@/types";
 
 const KEYS = {
@@ -14,6 +15,8 @@ const KEYS = {
   SAVINGS: "cartzen_savings",
   THEME: "cartzen_theme",
   DREAM_VAULT: "cartzen_dream_vault",
+  WISHLIST: "cartzen_wishlist",
+  RECENTLY_VIEWED: "cartzen_recently_viewed",
 } as const;
 
 function safeGet<T>(key: string, fallback: T): T {
@@ -88,4 +91,20 @@ export const themeStorage = {
 export const dreamVaultStorage = {
   get: (): DreamVaultItem[] => safeGet(KEYS.DREAM_VAULT, []),
   set: (items: DreamVaultItem[]) => safeSet(KEYS.DREAM_VAULT, items),
+};
+
+// Wishlist
+export const wishlistStorage = {
+  get: (): WishlistItem[] => safeGet(KEYS.WISHLIST, []),
+  set: (items: WishlistItem[]) => safeSet(KEYS.WISHLIST, items),
+};
+
+// Recently viewed (array of product IDs, most recent first)
+export const recentlyViewedStorage = {
+  get: (): string[] => safeGet(KEYS.RECENTLY_VIEWED, []),
+  add: (productId: string) => {
+    const existing = recentlyViewedStorage.get();
+    const updated = [productId, ...existing.filter((id) => id !== productId)].slice(0, 12);
+    safeSet(KEYS.RECENTLY_VIEWED, updated);
+  },
 };
