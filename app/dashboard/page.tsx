@@ -6,22 +6,28 @@ import {
   ShoppingBag,
   BarChart2,
   Calendar,
-  Award,
   BookOpen,
   Target,
 } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
+import { useCoolingOff } from "@/hooks/useCoolingOff";
+import { useWishlist } from "@/hooks/useWishlist";
 import {
   formatPrice,
   getMonthlySavings,
   getAverageCartValue,
   getNextMilestone,
-  getAchievedMilestones,
   getSavingsEquivalents,
+  getCurrentLevel,
+  getLevelProgress,
+  getUnlockedAchievements,
   MILESTONES,
   cn,
 } from "@/lib/utils";
+import { LevelCard } from "@/components/gamification/LevelCard";
+import { AchievementsGrid } from "@/components/gamification/AchievementsGrid";
+import type { AchievementData } from "@/lib/utils";
 
 const REASON_LABELS: Record<string, string> = {
   bored: "😴 Bored",
@@ -34,6 +40,8 @@ const REASON_LABELS: Record<string, string> = {
 export default function DashboardPage() {
   const { orders, savings, refreshOrders } = useOrders();
   const { entries, reasonCounts } = useJournal();
+  const { analytics: coolingAnalytics } = useCoolingOff();
+  const { items: wishlistItems } = useWishlist();
 
   useEffect(() => {
     refreshOrders();
@@ -42,9 +50,20 @@ export default function DashboardPage() {
   const monthly = getMonthlySavings(orders);
   const avgCart = getAverageCartValue(orders);
   const nextMilestone = getNextMilestone(savings);
-  const achieved = getAchievedMilestones(savings);
   const equivalents = getSavingsEquivalents(savings);
   const totalReasonEntries = Object.values(reasonCounts).reduce((a, b) => a + b, 0);
+  const realityChecksDone = orders.filter((o) => o.realityCheck).length;
+
+  // Achievement data
+  const achievementData: AchievementData = {
+    savings,
+    orderCount: orders.length,
+    urgesResisted: coolingAnalytics.urgesVanished,
+    urgesVanished: coolingAnalytics.urgesVanished,
+    realityChecksDone,
+    coolingOffItemsAdded: coolingAnalytics.resolved,
+    wishlistCount: wishlistItems.length,
+  };
 
   // Category frequency
   const categoryMap: Record<string, number> = {};
@@ -57,6 +76,9 @@ export default function DashboardPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const level = getCurrentLevel(savings);
+  const { pct: levelPct, nextLevel } = getLevelProgress(savings);
+
   if (orders.length === 0 && savings === 0) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
@@ -67,7 +89,7 @@ export default function DashboardPage() {
             Your savings dashboard is emptier than your motivation on a Monday.
           </p>
           <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
-            Place your first fake order. This is the best financial advice you'll receive today.
+            Place your first fake order. This is the best financial advice you&apos;ll receive today.
           </p>
           <Link href="/" className="btn-primary">Start Saving (by Shopping)</Link>
         </div>
@@ -77,15 +99,18 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="font-display text-2xl md:text-3xl font-bold mb-1">Savings Dashboard</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
           Every simulated order is real money saved.
         </p>
       </div>
 
+      {/* Level card */}
+      <LevelCard savings={savings} />
+
       {/* Key stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           {
             icon: TrendingUp,
@@ -126,7 +151,7 @@ export default function DashboardPage() {
 
       {/* Savings reality translator */}
       {equivalents.length > 0 && (
-        <div className="card p-6 mb-8 relative overflow-hidden">
+        <div className="card p-6 mb-6 relative overflow-hidden">
           <div className="absolute -top-8 -right-8 w-32 h-32 zen-gradient opacity-10 rounded-full blur-2xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-1">
@@ -134,7 +159,7 @@ export default function DashboardPage() {
               <h2 className="font-semibold">What {formatPrice(savings)} could actually buy</h2>
             </div>
             <p className="text-xs text-gray-400 mb-5">
-              The same money you didn&apos;t spend, in things you can actually picture. You&apos;re welcome.
+              The same money you didn&apos;t spend, in things you can actually picture.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {equivalents.map((eq) => (
@@ -156,12 +181,17 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Achievements */}
+      <div className="mb-6">
+        <AchievementsGrid data={achievementData} />
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6">
         {/* Milestone progress */}
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Target className="w-4 h-4 text-zen-500" />
-            <h2 className="font-semibold">Milestones</h2>
+            <h2 className="font-semibold">Savings Milestones</h2>
           </div>
 
           <div className="space-y-3">
@@ -202,7 +232,7 @@ export default function DashboardPage() {
 
           {totalReasonEntries === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
-              Your journal insights will appear here
+              Your trigger patterns will appear here after a few orders
             </p>
           ) : (
             <div className="space-y-3">
@@ -233,7 +263,7 @@ export default function DashboardPage() {
         {topCategories.length > 0 && (
           <div className="card p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Award className="w-4 h-4 text-amber-500" />
+              <BarChart2 className="w-4 h-4 text-amber-500" />
               <h2 className="font-semibold">Most Shopped Categories</h2>
             </div>
             <div className="space-y-3">
@@ -275,22 +305,22 @@ export default function DashboardPage() {
           );
         })()}
 
-        {/* Achievements */}
-        {achieved.length > 0 && (
+        {/* Cooling-off stats */}
+        {coolingAnalytics.resolved > 0 && (
           <div className="card p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Award className="w-4 h-4 text-amber-500" />
-              <h2 className="font-semibold">Achievements Unlocked</h2>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">❄️</span>
+              <h2 className="font-semibold">Cooling-Off Stats</h2>
             </div>
-            <div className="space-y-2">
-              {achieved.map((m) => (
-                <div key={m.amount} className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30">
-                  <span className="text-lg">🏆</span>
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
-                    {formatPrice(m.amount)} saved!
-                  </p>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-blue-50 dark:bg-blue-950/30 p-3 text-center">
+                <p className="text-2xl font-bold text-blue-600">{coolingAnalytics.vanishRate}%</p>
+                <p className="text-xs text-gray-400 mt-0.5">Urges vanished</p>
+              </div>
+              <div className="rounded-xl bg-green-50 dark:bg-green-950/30 p-3 text-center">
+                <p className="text-lg font-bold text-green-600">{formatPrice(coolingAnalytics.totalSavedFromVanished)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">Saved this way</p>
+              </div>
             </div>
           </div>
         )}

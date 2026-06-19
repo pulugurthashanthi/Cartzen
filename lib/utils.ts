@@ -162,6 +162,178 @@ const SAVINGS_UNITS = [
   { unit: 90000, emoji: "🛵", singular: "brand-new scooter", plural: "brand-new scooters" },
 ];
 
+// ─── LEVELS ──────────────────────────────────────────────────────────────────
+export interface Level {
+  name: string;
+  emoji: string;
+  minSavings: number;
+  maxSavings: number;
+  color: string;
+  gradient: string;
+  tagline: string;
+}
+
+export const LEVELS: Level[] = [
+  {
+    name: "Saver",
+    emoji: "🌱",
+    minSavings: 0,
+    maxSavings: 4999,
+    color: "text-green-600",
+    gradient: "from-green-400 to-emerald-500",
+    tagline: "You planted a seed of financial wisdom",
+  },
+  {
+    name: "Disciplined Shopper",
+    emoji: "🧘",
+    minSavings: 5000,
+    maxSavings: 24999,
+    color: "text-blue-600",
+    gradient: "from-blue-400 to-indigo-500",
+    tagline: "Your wallet has feelings and you respect them",
+  },
+  {
+    name: "Mindful Buyer",
+    emoji: "🦋",
+    minSavings: 25000,
+    maxSavings: 99999,
+    color: "text-fuchsia-600",
+    gradient: "from-fuchsia-400 to-purple-500",
+    tagline: "You see through the illusion of retail therapy",
+  },
+  {
+    name: "Financial Ninja",
+    emoji: "⚡",
+    minSavings: 100000,
+    maxSavings: 499999,
+    color: "text-amber-600",
+    gradient: "from-amber-400 to-orange-500",
+    tagline: "Discounts fear you. Impulse buys avoid you.",
+  },
+  {
+    name: "Zen Master",
+    emoji: "👑",
+    minSavings: 500000,
+    maxSavings: Infinity,
+    color: "text-orange-600",
+    gradient: "from-orange-400 to-rose-500",
+    tagline: "You have achieved financial enlightenment",
+  },
+];
+
+export function getCurrentLevel(savings: number): Level {
+  return LEVELS.slice().reverse().find((l) => savings >= l.minSavings) ?? LEVELS[0];
+}
+
+export function getLevelProgress(savings: number): { pct: number; nextLevel: Level | null; toNext: number } {
+  const current = getCurrentLevel(savings);
+  const nextLevel = LEVELS.find((l) => l.minSavings > current.minSavings) ?? null;
+  if (!nextLevel) return { pct: 100, nextLevel: null, toNext: 0 };
+  const range = nextLevel.minSavings - current.minSavings;
+  const progress = savings - current.minSavings;
+  return {
+    pct: Math.min(100, Math.round((progress / range) * 100)),
+    nextLevel,
+    toNext: nextLevel.minSavings - savings,
+  };
+}
+
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+export interface Achievement {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  check: (data: AchievementData) => boolean;
+}
+
+export interface AchievementData {
+  savings: number;
+  orderCount: number;
+  urgesResisted: number;
+  urgesVanished: number;
+  realityChecksDone: number;
+  coolingOffItemsAdded: number;
+  wishlistCount: number;
+}
+
+export const ACHIEVEMENTS: Achievement[] = [
+  {
+    id: "first_save",
+    name: "First Step",
+    emoji: "👣",
+    description: "Place your first fake order",
+    check: (d) => d.orderCount >= 1,
+  },
+  {
+    id: "save_1k",
+    name: "₹1,000 Saved",
+    emoji: "💰",
+    description: "Save your first ₹1,000",
+    check: (d) => d.savings >= 1000,
+  },
+  {
+    id: "save_10k",
+    name: "₹10,000 Club",
+    emoji: "🏆",
+    description: "Save over ₹10,000 total",
+    check: (d) => d.savings >= 10000,
+  },
+  {
+    id: "save_1l",
+    name: "Lakhpati (Fake)",
+    emoji: "💎",
+    description: "Save over ₹1,00,000",
+    check: (d) => d.savings >= 100000,
+  },
+  {
+    id: "five_orders",
+    name: "Serial Simulator",
+    emoji: "📦",
+    description: "Place 5 simulated orders",
+    check: (d) => d.orderCount >= 5,
+  },
+  {
+    id: "twenty_five_orders",
+    name: "Chronic Simulater",
+    emoji: "🏅",
+    description: "Place 25 simulated orders",
+    check: (d) => d.orderCount >= 25,
+  },
+  {
+    id: "first_urge_vanished",
+    name: "Urge Outlasted",
+    emoji: "❄️",
+    description: "Have a cooling-off urge disappear",
+    check: (d) => d.urgesVanished >= 1,
+  },
+  {
+    id: "ten_urges_resisted",
+    name: "Impulse Slayer",
+    emoji: "🛡️",
+    description: "Resist 10 shopping urges",
+    check: (d) => d.urgesResisted >= 10,
+  },
+  {
+    id: "reality_check",
+    name: "Face the Truth",
+    emoji: "🔍",
+    description: "Complete your first post-delivery reality check",
+    check: (d) => d.realityChecksDone >= 1,
+  },
+  {
+    id: "wishlist_builder",
+    name: "Dream Collector",
+    emoji: "💝",
+    description: "Add 5 items to your wishlist",
+    check: (d) => d.wishlistCount >= 5,
+  },
+];
+
+export function getUnlockedAchievements(data: AchievementData) {
+  return ACHIEVEMENTS.filter((a) => a.check(data));
+}
+
 export function getSavingsEquivalents(savings: number, count = 3) {
   if (savings <= 0) return [];
   return SAVINGS_UNITS
