@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, User, Phone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, Plus, Shuffle, Check } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
@@ -26,39 +26,72 @@ const STATES = [
   "Uttarakhand","West Bengal","Delhi","Jammu & Kashmir","Ladakh",
 ];
 
-interface Address {
-  fullName: string;
-  phone: string;
-  line1: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
+const RANDOM_ADDRESSES = [
+  { fullName: "Ravi Kumar", phone: "9876543210", line1: "42, MG Road, Indiranagar", city: "Bangalore", state: "Karnataka", pincode: "560038" },
+  { fullName: "Priya Sharma", phone: "9123456780", line1: "15, Banjara Hills, Road No 12", city: "Hyderabad", state: "Telangana", pincode: "500034" },
+  { fullName: "Amit Patel", phone: "9988776655", line1: "7, Juhu Tara Road, Juhu", city: "Mumbai", state: "Maharashtra", pincode: "400049" },
+  { fullName: "Sunita Verma", phone: "9011223344", line1: "301, Lajpat Nagar II", city: "New Delhi", state: "Delhi", pincode: "110024" },
+  { fullName: "Karthik Nair", phone: "9876512345", line1: "22, Anna Salai, Teynampet", city: "Chennai", state: "Tamil Nadu", pincode: "600018" },
+  { fullName: "Deepa Menon", phone: "9445566778", line1: "5, Salt Lake Sector V", city: "Kolkata", state: "West Bengal", pincode: "700091" },
+];
 
+interface Address { fullName: string; phone: string; line1: string; city: string; state: string; pincode: string; }
 const EMPTY_ADDRESS: Address = { fullName: "", phone: "", line1: "", city: "", state: "", pincode: "" };
-
 type Step = "journal" | "address" | "review";
-
 const STEPS: { id: Step; label: string }[] = [
   { id: "journal", label: "Mindset" },
   { id: "address", label: "Address" },
   { id: "review", label: "Place Order" },
 ];
 
-function isAddressValid(a: Address) {
-  return a.fullName.trim() && a.phone.trim().length >= 10 && a.line1.trim() && a.city.trim() && a.state && a.pincode.trim().length === 6;
+function isAddressValid(a: Address): boolean {
+  return !!(a.fullName.trim() && a.phone.trim().length >= 10 && a.line1.trim() && a.city.trim() && a.state && a.pincode.trim().length === 6);
+}
+
+function parseStoredAddress(raw: string): Address | null {
+  try {
+    const [addrPart, phone] = raw.split(" | ");
+    if (!addrPart) return null;
+    const parts = addrPart.split(", ");
+    const fullName = parts[0] ?? "";
+    const line1 = parts[1] ?? "";
+    const city = parts[2] ?? "";
+    const statePin = parts[3] ?? "";
+    const [state, pincode] = statePin.split(" - ");
+    if (!fullName || !pincode) return null;
+    return { fullName, phone: phone ?? "", line1, city, state: state ?? "", pincode: pincode ?? "" };
+  } catch { return null; }
 }
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, total, clearCart } = useCart();
-  const { placeOrder } = useOrders();
+  const { placeOrder, orders } = useOrders();
   const { addEntry } = useJournal();
   const [step, setStep] = useState<Step>("journal");
   const [selectedReason, setSelectedReason] = useState<ShoppingReason | null>(null);
   const [note, setNote] = useState("");
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  const [showNewForm, setShowNewForm] = useState(false);
   const [placing, setPlacing] = useState(false);
+
+  // Parse unique saved addresses from order history
+  const savedAddresses = useMemo(() => {
+    const seen = new Set<string>();
+    const result: Address[] = [];
+    for (const o of orders) {
+      if (!o.deliveryAddress) continue;
+      const parsed = parseStoredAddress(o.deliveryAddress);
+      if (parsed && !seen.has(parsed.pincode + parsed.line1)) {
+        seen.add(parsed.pincode + parsed.line1);
+        result.push(parsed);
+      }
+    }
+    return result;
+  }, [orders]);
+
+  const hasSaved = savedAddresses.length > 0;
+  const isSelected = isAddressValid(address);
 
   if (items.length === 0) {
     return (
@@ -73,7 +106,7 @@ export default function CheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (!selectedReason) return;
+    if (!selectedReason || !isAddressValid(address)) return;
     setPlacing(true);
     await new Promise((r) => setTimeout(r, 1400));
     const journalEntry = addEntry(selectedReason, note || undefined);
@@ -81,6 +114,17 @@ export default function CheckoutPage() {
     const order = placeOrder(items, journalEntry, deliveryAddress);
     clearCart();
     router.push(`/checkout-success/${order.id}`);
+  };
+
+  const selectAddress = (a: Address) => {
+    setAddress(a);
+    setShowNewForm(false);
+  };
+
+  const useRandom = () => {
+    const r = RANDOM_ADDRESSES[Math.floor(Math.random() * RANDOM_ADDRESSES.length)];
+    setAddress(r);
+    setShowNewForm(true);
   };
 
   const stepIndex = STEPS.findIndex((s) => s.id === step);
@@ -155,114 +199,145 @@ export default function CheckoutPage() {
 
       {/* Step 2 — Address */}
       {step === "address" && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-5 animate-fade-in">
           <button onClick={() => setStep("journal")} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <div className="text-center mb-2">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
               <MapPin className="w-7 h-7 text-blue-500" />
             </div>
             <h1 className="font-display text-2xl font-bold mb-1">Delivery Address</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">Where should we simulate the delivery?</p>
           </div>
 
-          <div className="card p-6 space-y-4">
-            {/* Name & Phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                  <User className="inline w-3.5 h-3.5 mr-1" />Full Name *
-                </label>
-                <input
-                  className="input"
-                  placeholder="Ravi Kumar"
-                  value={address.fullName}
-                  onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                  <Phone className="inline w-3.5 h-3.5 mr-1" />Phone Number *
-                </label>
-                <input
-                  className="input"
-                  placeholder="9876543210"
-                  maxLength={10}
-                  value={address.phone}
-                  onChange={(e) => setAddress({ ...address, phone: e.target.value.replace(/\D/, "") })}
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Address (House, Street, Area) *</label>
-              <input
-                className="input"
-                placeholder="42, MG Road, Indiranagar"
-                value={address.line1}
-                onChange={(e) => setAddress({ ...address, line1: e.target.value })}
-              />
-            </div>
-
-            {/* City, State, Pincode */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">City *</label>
-                <input
-                  className="input"
-                  placeholder="Bangalore"
-                  value={address.city}
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">State *</label>
-                <select
-                  className="input"
-                  value={address.state}
-                  onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                >
-                  <option value="">Select</option>
-                  {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Pincode *</label>
-                <input
-                  className="input"
-                  placeholder="560001"
-                  maxLength={6}
-                  value={address.pincode}
-                  onChange={(e) => setAddress({ ...address, pincode: e.target.value.replace(/\D/, "") })}
-                />
-              </div>
-            </div>
+          {/* Quick actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={useRandom}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <Shuffle className="w-4 h-4 text-purple-500" /> Random Address
+            </button>
+            {hasSaved && !showNewForm && (
+              <button
+                onClick={() => { setShowNewForm(true); setAddress(EMPTY_ADDRESS); }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <Plus className="w-4 h-4 text-green-500" /> New Address
+              </button>
+            )}
           </div>
 
-          <button onClick={() => setStep("review")} disabled={!isAddressValid(address)} className="btn-primary w-full">
+          {/* Saved addresses */}
+          {hasSaved && !showNewForm && (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Saved Addresses</p>
+              {savedAddresses.map((a, i) => {
+                const isChosen = address.line1 === a.line1 && address.pincode === a.pincode;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => selectAddress(a)}
+                    className={cn(
+                      "w-full text-left p-4 rounded-xl border-2 transition-all",
+                      isChosen
+                        ? "border-zen-500 bg-zen-50 dark:bg-zen-950/50"
+                        : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-900"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn("w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all",
+                        isChosen ? "border-zen-500 bg-zen-500" : "border-gray-300 dark:border-gray-600"
+                      )}>
+                        {isChosen && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{a.fullName}</p>
+                        <p className="text-gray-500">{a.line1}, {a.city}, {a.state} - {a.pincode}</p>
+                        <p className="text-gray-400 text-xs mt-0.5">📞 {a.phone}</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => { setShowNewForm(true); setAddress(EMPTY_ADDRESS); }}
+                className="w-full flex items-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-500 hover:border-zen-300 hover:text-zen-500 transition-all text-sm font-medium"
+              >
+                <Plus className="w-4 h-4" /> Add New Address
+              </button>
+            </div>
+          )}
+
+          {/* New address form */}
+          {(!hasSaved || showNewForm) && (
+            <div className="card p-5 space-y-4">
+              {hasSaved && (
+                <button onClick={() => { setShowNewForm(false); setAddress(EMPTY_ADDRESS); }} className="text-xs text-zen-500 hover:text-zen-600 font-medium flex items-center gap-1">
+                  <ArrowLeft className="w-3 h-3" /> Back to saved
+                </button>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Full Name *</label>
+                  <input className="input" placeholder="Ravi Kumar" value={address.fullName} onChange={(e) => setAddress({ ...address, fullName: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Phone *</label>
+                  <input className="input" placeholder="9876543210" maxLength={10} value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Address *</label>
+                <input className="input" placeholder="House No, Street, Area" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">City *</label>
+                  <input className="input" placeholder="Bangalore" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">State *</label>
+                  <select className="input" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })}>
+                    <option value="">Select</option>
+                    {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Pincode *</label>
+                  <input className="input" placeholder="560001" maxLength={6} value={address.pincode} onChange={(e) => setAddress({ ...address, pincode: e.target.value.replace(/\D/g, "") })} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => setStep("review")}
+            disabled={!isSelected}
+            className="btn-primary w-full"
+          >
             Review Order <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Step 3 — Review & Place */}
+      {/* Step 3 — Review */}
       {step === "review" && (
         <div className="space-y-6 animate-fade-in">
           <button onClick={() => setStep("address")} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
 
-          {/* Delivery address summary */}
+          {/* Address summary */}
           <div className="card p-4 border-blue-100 dark:border-blue-900">
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
+              <div className="text-sm flex-1">
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{address.fullName} · {address.phone}</p>
                 <p className="text-gray-500">{address.line1}, {address.city}, {address.state} - {address.pincode}</p>
               </div>
-              <button onClick={() => setStep("address")} className="ml-auto text-xs text-zen-500 hover:text-zen-600 font-medium">Change</button>
+              <button onClick={() => setStep("address")} className="text-xs text-zen-500 hover:text-zen-600 font-medium">Change</button>
             </div>
           </div>
 
@@ -284,15 +359,10 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="space-y-1.5 pt-3 border-t border-gray-100 dark:border-gray-800 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal</span><span>{formatPrice(total)}</span>
-              </div>
-              <div className="flex justify-between text-green-600 dark:text-green-400">
-                <span>Delivery</span><span>FREE</span>
-              </div>
+              <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatPrice(total)}</span></div>
+              <div className="flex justify-between text-green-600 dark:text-green-400"><span>Delivery</span><span>FREE</span></div>
               <div className="flex justify-between font-bold text-base pt-1 border-t border-gray-100 dark:border-gray-800">
-                <span>Total</span>
-                <span className="zen-gradient-text">{formatPrice(total)}</span>
+                <span>Total</span><span className="zen-gradient-text">{formatPrice(total)}</span>
               </div>
             </div>
           </div>
@@ -302,7 +372,7 @@ export default function CheckoutPage() {
               <Sparkles className="w-4 h-4 text-calm-500 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-calm-700 dark:text-calm-400">
                 <span className="font-semibold">You're saving {formatPrice(total)}!</span>{" "}
-                This is a simulated order — no payment, no delivery, 100% savings.
+                No payment, no delivery — 100% simulation.
               </p>
             </div>
           </div>

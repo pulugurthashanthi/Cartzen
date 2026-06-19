@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, ShoppingCart, Snowflake, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, ShoppingCart, Snowflake } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { formatPrice, cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const router = useRouter();
   const { addItem, items } = useCart();
   const { addItem: addToCooling, isInCoolingOff } = useCoolingOff();
   const inCart = items.some((i) => i.productId === product.id);
@@ -102,7 +104,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Actions */}
         <div className="flex gap-2 mt-auto pt-2">
           <button
-            onClick={() => addItem(product)}
+            onClick={() => inCart ? router.push("/cart") : addItem(product)}
             className={cn(
               "flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95",
               inCart
@@ -111,7 +113,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             )}
           >
             <ShoppingCart className="w-3.5 h-3.5" />
-            {inCart ? "In Cart" : "Add to Cart"}
+            {inCart ? "Go to Cart" : "Add to Cart"}
           </button>
           <button
             onClick={() => addToCooling(product)}
