@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  CheckCircle, Package, TrendingUp, BarChart2, ArrowRight,
-  Sparkles, MapPin, Calendar, ShoppingBag,
+  Package, TrendingUp, BarChart2, ArrowRight,
+  Sparkles, MapPin, Calendar, ShoppingBag, Brain,
 } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, cn } from "@/lib/utils";
+import { generateTherapistInsight } from "@/lib/therapist";
 
 const FUNNY_LINES = [
   "Your imaginary package is in imaginary transit. The tracking is very real though.",
@@ -28,7 +29,7 @@ function getDeliveryDate() {
 export default function CheckoutSuccessPage() {
   const params = useParams();
   const router = useRouter();
-  const { getOrder, savings, refreshOrders } = useOrders();
+  const { getOrder, savings, orders, refreshOrders } = useOrders();
   const [show, setShow] = useState(false);
   const [deliveryDate] = useState(getDeliveryDate);
 
@@ -40,6 +41,10 @@ export default function CheckoutSuccessPage() {
 
   const order = getOrder(params.id as string);
   const [funnyLine] = useState(() => FUNNY_LINES[Math.floor(Math.random() * FUNNY_LINES.length)]);
+
+  const therapistInsight = order?.journalEntry?.reason
+    ? generateTherapistInsight(order.journalEntry.reason, orders.filter((o) => o.id !== order.id), savings)
+    : null;
 
   const nextMilestone = MILESTONES.find((m) => m > savings);
   const prevMilestone = [...MILESTONES].reverse().find((m) => m <= savings) ?? 0;
@@ -142,6 +147,22 @@ export default function CheckoutSuccessPage() {
             <p className="text-sm text-zen-700 dark:text-zen-400 font-semibold">All milestones achieved! Legendary! 👑</p>
           )}
         </div>
+
+        {/* AI Therapist insight */}
+        {therapistInsight && (
+          <div className={cn(
+            "bg-gradient-to-br rounded-2xl p-5 mb-5 border shadow-sm",
+            therapistInsight.color
+          )}>
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="w-4 h-4 text-gray-500" />
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Shopping Therapist</span>
+              <span className="ml-auto text-base">{therapistInsight.emoji}</span>
+            </div>
+            <p className="font-bold text-gray-900 dark:text-gray-100 mb-1">{therapistInsight.title}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{therapistInsight.body}</p>
+          </div>
+        )}
 
         {/* CTAs */}
         <div className="space-y-3">
