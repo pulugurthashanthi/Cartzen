@@ -12,7 +12,7 @@ import {
   Tag,
   Sparkles,
 } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { formatPrice, cn } from "@/lib/utils";
 
 export default function CartPage() {

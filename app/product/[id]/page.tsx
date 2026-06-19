@@ -16,7 +16,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { products, reviews } from "@/data/products";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { formatPrice, cn } from "@/lib/utils";
 

@@ -9,7 +9,7 @@ import {
   Sparkles,
   BookOpen,
 } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
 import { formatPrice, cn } from "@/lib/utils";

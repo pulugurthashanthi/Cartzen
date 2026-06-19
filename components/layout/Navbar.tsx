@@ -19,7 +19,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 

@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, Snowflake, Zap } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product } from "@/types";

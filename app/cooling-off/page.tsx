@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Snowflake, Clock, ShoppingCart, Trash2, Check, X } from "lucide-react";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/contexts/CartContext";
 import { formatPrice, cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
