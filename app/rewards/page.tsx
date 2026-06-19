@@ -199,10 +199,27 @@ export default function RewardsPage() {
 
       {/* Badge collection */}
       <div className="card p-5 mb-6">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-4 h-4 text-fuchsia-500" />
           <h2 className="font-semibold">Badge Collection</h2>
-          <span className="ml-auto text-xs text-gray-400">{badges.length} collected</span>
+          <span className="ml-auto text-xs text-gray-400">{badges.length}/{BADGES.length} collected</span>
+        </div>
+        {/* Per-rarity progress */}
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          {(["common", "rare", "epic", "legendary"] as const).map((rar) => {
+            const pool = BADGES.filter((b) => b.rarity === rar);
+            const owned = pool.filter((b) => ownedSet.has(b.id)).length;
+            const rr = RARITIES[rar];
+            return (
+              <div key={rar} className="text-center">
+                <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden mb-1">
+                  <div className={cn("h-full rounded-full bg-gradient-to-r", rr.gradient)} style={{ width: `${pool.length ? (owned / pool.length) * 100 : 0}%` }} />
+                </div>
+                <p className={cn("text-[10px] font-semibold capitalize", rr.text)}>{rar}</p>
+                <p className="text-[10px] text-gray-400">{owned}/{pool.length}</p>
+              </div>
+            );
+          })}
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
           {BADGES.map((b) => {
@@ -230,6 +247,11 @@ export default function RewardsPage() {
         <div className="flex items-center gap-2 mb-4">
           <History className="w-4 h-4 text-gray-400" />
           <h2 className="font-semibold">Reward History</h2>
+          {history.length > 0 && (
+            <span className="ml-auto text-xs text-gray-400">
+              {history.length} box{history.length !== 1 ? "es" : ""} · {history.filter((d) => d.rarity === "legendary").length} legendary
+            </span>
+          )}
         </div>
         {history.length === 0 ? (
           <div className="text-center py-10">
