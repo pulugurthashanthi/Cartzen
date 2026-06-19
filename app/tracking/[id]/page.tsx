@@ -11,6 +11,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { getStatusSteps, formatPrice, cn } from "@/lib/utils";
 import { Confetti } from "@/components/ui/Confetti";
 import { CartBuddy } from "@/components/ui/CartBuddy";
+import { DeliveryNotifyButton } from "@/components/DeliveryNotifyButton";
 
 const REALITY_OPTIONS = [
   { value: "yes" as const, emoji: "😍", label: "Yes, still want it!" },
@@ -117,6 +118,11 @@ export default function TrackingPage() {
                 <p className="text-xs text-gray-400">+{order.items.length - 1} more item{order.items.length > 2 ? "s" : ""}</p>
               )}
             </div>
+          </div>
+        )}
+        {!isDelivered && (
+          <div className="pt-3 mt-3 border-t border-orange-50 dark:border-gray-800">
+            <DeliveryNotifyButton productName={mainItem?.product.name} />
           </div>
         )}
       </div>

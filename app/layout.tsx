@@ -1,15 +1,26 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ToastContainer } from "@/components/ui/Toast";
+import { PWARegister } from "@/components/PWARegister";
 
 export const metadata: Metadata = {
   title: "CartZen — Shop Without Spending",
   description:
     "Satisfy your shopping urge mindfully. CartZen helps you overcome impulse spending through simulated shopping experiences.",
   keywords: ["mindful shopping", "impulse spending", "financial wellness"],
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "CartZen",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f97316",
 };
 
 export default function RootLayout({
@@ -25,6 +36,7 @@ export default function RootLayout({
             <Navbar />
             <main className="pt-16">{children}</main>
             <ToastContainer />
+            <PWARegister />
           </CartProvider>
         </AuthProvider>
       </body>
