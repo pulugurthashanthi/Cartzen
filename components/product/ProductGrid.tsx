@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { products as staticProducts, categories } from "@/data/products";
+import { products as staticProducts, categories as staticCategories } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -58,6 +58,27 @@ export function ProductGrid() {
     const fsIds = new Set(firestoreProducts.map((p) => p.id));
     return [...firestoreProducts, ...staticProducts.filter((p) => !fsIds.has(p.id))];
   }, [firestoreProducts]);
+
+  const categories = useMemo(() => {
+    const countMap: Record<string, number> = {};
+    allProducts.forEach((p) => {
+      countMap[p.category] = (countMap[p.category] || 0) + 1;
+    });
+    const totalCount = allProducts.length;
+    const knownCatIds = new Set(staticCategories.map((c) => c.id));
+    const extraCats = Object.keys(countMap)
+      .filter((k) => k !== "all" && !knownCatIds.has(k))
+      .map((k) => ({ id: k, name: k.charAt(0).toUpperCase() + k.slice(1), icon: "🛍️" }));
+    const merged = [
+      { id: "all", name: "All", icon: "✨" },
+      ...staticCategories.filter((c) => c.id !== "all"),
+      ...extraCats,
+    ];
+    return merged.map((c) => ({
+      ...c,
+      count: c.id === "all" ? totalCount : (countMap[c.id] || 0),
+    }));
+  }, [allProducts]);
 
   const filtered = useMemo(() => {
     let list = [...allProducts];
@@ -121,6 +142,16 @@ export function ProductGrid() {
           >
             <span>{cat.icon}</span>
             {cat.name}
+            {cat.count > 0 && (
+              <span className={cn(
+                "text-xs font-semibold px-1.5 py-0.5 rounded-full",
+                activeCategory === cat.id
+                  ? "bg-white/20 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+              )}>
+                {cat.count}
+              </span>
+            )}
           </button>
         ))}
       </div>

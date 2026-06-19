@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,20 +15,72 @@ import {
   Shield,
   RotateCcw,
 } from "lucide-react";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { products, reviews } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { formatPrice, cn } from "@/lib/utils";
+import type { Product } from "@/types";
+
+function normalizeFirestoreProduct(id: string, data: Record<string, unknown>): Product {
+  return {
+    id,
+    name: (data.name as string) ?? "",
+    brand: (data.brand as string) ?? "",
+    price: Number(data.price) || 0,
+    originalPrice: undefined,
+    discount: undefined,
+    rating: 4.0,
+    reviewCount: 0,
+    image: (data.image as string) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+    images: [(data.image as string) || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"],
+    category: (data.category as string) ?? "electronics",
+    subcategory: "",
+    description: (data.description as string) ?? "",
+    features: [],
+    inStock: (data.inStock as boolean) ?? true,
+    badge: undefined,
+    tags: [(data.category as string) ?? ""],
+  };
+}
 
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
-  const product = products.find((p) => p.id === params.id);
+  const staticProduct = products.find((p) => p.id === params.id);
+  const [product, setProduct] = useState<Product | null>(staticProduct ?? null);
+  const [loadingProduct, setLoadingProduct] = useState(!staticProduct);
   const { addItem, items } = useCart();
   const { addItem: addToCooling, isInCoolingOff } = useCoolingOff();
   const [activeImage, setActiveImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    if (staticProduct) return;
+    async function fetchFromFirestore() {
+      try {
+        const snap = await getDoc(doc(db, "products", params.id as string));
+        if (snap.exists()) {
+          setProduct(normalizeFirestoreProduct(snap.id, snap.data() as Record<string, unknown>));
+        }
+      } catch {
+        // Firestore unavailable
+      } finally {
+        setLoadingProduct(false);
+      }
+    }
+    fetchFromFirestore();
+  }, [params.id, staticProduct]);
+
+  if (loadingProduct) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zen-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -161,17 +213,19 @@ export default function ProductPage() {
           </p>
 
           {/* Features */}
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Key Features</h3>
-            <ul className="space-y-2">
-              {product.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Check className="w-4 h-4 text-zen-500 flex-shrink-0 mt-0.5" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {product.features.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Key Features</h3>
+              <ul className="space-y-2">
+                {product.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Check className="w-4 h-4 text-zen-500 flex-shrink-0 mt-0.5" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Quantity */}
           <div className="flex items-center gap-4">

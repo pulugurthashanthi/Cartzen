@@ -274,56 +274,90 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Product Table */}
+          {/* Product list */}
           {products.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>No products yet. Add your first one!</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Brand</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Category</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Price</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Stock</th>
-                    <th className="px-4 py-3" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <td className="px-4 py-3 font-medium">{p.name}</td>
-                      <td className="px-4 py-3 text-gray-500">{p.brand}</td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400 text-xs capitalize">
-                          {p.category}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">₹{p.price.toLocaleString()}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${p.inStock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                          {p.inStock ? "In Stock" : "Out"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 justify-end">
-                          <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => deleteProduct(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Brand</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Category</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Price</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Stock</th>
+                      <th className="px-4 py-3" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {products.map((p) => (
+                      <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                        <td className="px-4 py-3 font-medium">{p.name}</td>
+                        <td className="px-4 py-3 text-gray-500">{p.brand}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded-full bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400 text-xs capitalize">
+                            {p.category}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">₹{p.price.toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${p.inStock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                            {p.inStock ? "In Stock" : "Out"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 justify-end">
+                            <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => deleteProduct(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {products.map((p) => (
+                  <div key={p.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{p.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{p.brand}</p>
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => startEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => deleteProduct(p.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-full bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400 text-xs capitalize">
+                        {p.category}
+                      </span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">₹{p.price.toLocaleString()}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${p.inStock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                        {p.inStock ? "In Stock" : "Out"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -338,45 +372,78 @@ export default function AdminPage() {
               <p>No users yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Email</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Role</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">Joined</th>
-                    <th className="px-4 py-3" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <td className="px-4 py-3 font-medium">{u.name}</td>
-                      <td className="px-4 py-3 text-gray-500">{u.email}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                          <button
-                            onClick={() => toggleRole(u)}
-                            className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-                          >
-                            Make {u.role === "admin" ? "User" : "Admin"}
-                          </button>
-                        )}
-                      </td>
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Name</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Email</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Role</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-500">Joined</th>
+                      <th className="px-4 py-3" />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                        <td className="px-4 py-3 font-medium">{u.name}</td>
+                        <td className="px-4 py-3 text-gray-500">{u.email}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+                            <button
+                              onClick={() => toggleRole(u)}
+                              className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            >
+                              Make {u.role === "admin" ? "User" : "Admin"}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
+                {users.map((u) => (
+                  <div key={u.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{u.name}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
+                        {u.role}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">
+                        Joined {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                      </p>
+                      {u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+                        <button
+                          onClick={() => toggleRole(u)}
+                          className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          Make {u.role === "admin" ? "User" : "Admin"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
