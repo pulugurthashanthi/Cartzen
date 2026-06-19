@@ -147,3 +147,31 @@ export function getNextMilestone(savings: number) {
 export function getAchievedMilestones(savings: number) {
   return MILESTONES.filter((m) => m.amount <= savings);
 }
+
+// Translates a savings amount into funny, tangible real-life equivalents.
+// Unit prices are rough Indian averages — picked for comedy, not accounting.
+const SAVINGS_UNITS = [
+  { unit: 50, emoji: "🍫", singular: "chocolate bar", plural: "chocolate bars" },
+  { unit: 120, emoji: "☕", singular: "fancy coffee", plural: "fancy coffees" },
+  { unit: 250, emoji: "🍛", singular: "plate of biryani", plural: "plates of biryani" },
+  { unit: 500, emoji: "🎬", singular: "movie ticket", plural: "movie tickets (with popcorn)" },
+  { unit: 1500, emoji: "💆", singular: "spa day", plural: "spa days" },
+  { unit: 3000, emoji: "👟", singular: "decent pair of sneakers", plural: "pairs of sneakers" },
+  { unit: 8000, emoji: "✈️", singular: "domestic flight", plural: "domestic flights" },
+  { unit: 45000, emoji: "🏝️", singular: "trip to Goa", plural: "trips to Goa" },
+  { unit: 90000, emoji: "🛵", singular: "brand-new scooter", plural: "brand-new scooters" },
+];
+
+export function getSavingsEquivalents(savings: number, count = 3) {
+  if (savings <= 0) return [];
+  return SAVINGS_UNITS
+    .map((u) => ({ ...u, qty: Math.floor(savings / u.unit) }))
+    .filter((u) => u.qty >= 1)
+    .sort((a, b) => b.unit - a.unit) // prefer bigger, more impressive items first
+    .slice(0, count)
+    .map((u) => ({
+      emoji: u.emoji,
+      text: `${u.qty} ${u.qty === 1 ? u.singular : u.plural}`,
+      qty: u.qty,
+    }));
+}

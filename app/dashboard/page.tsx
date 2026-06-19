@@ -18,6 +18,7 @@ import {
   getAverageCartValue,
   getNextMilestone,
   getAchievedMilestones,
+  getSavingsEquivalents,
   MILESTONES,
   cn,
 } from "@/lib/utils";
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const avgCart = getAverageCartValue(orders);
   const nextMilestone = getNextMilestone(savings);
   const achieved = getAchievedMilestones(savings);
+  const equivalents = getSavingsEquivalents(savings);
   const totalReasonEntries = Object.values(reasonCounts).reduce((a, b) => a + b, 0);
 
   // Category frequency
@@ -121,6 +123,38 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Savings reality translator */}
+      {equivalents.length > 0 && (
+        <div className="card p-6 mb-8 relative overflow-hidden">
+          <div className="absolute -top-8 -right-8 w-32 h-32 zen-gradient opacity-10 rounded-full blur-2xl" />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">🤑</span>
+              <h2 className="font-semibold">What {formatPrice(savings)} could actually buy</h2>
+            </div>
+            <p className="text-xs text-gray-400 mb-5">
+              The same money you didn&apos;t spend, in things you can actually picture. You&apos;re welcome.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {equivalents.map((eq) => (
+                <div
+                  key={eq.text}
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-zen-50 to-calm-50 dark:from-zen-950/40 dark:to-calm-950/40 border border-orange-100 dark:border-gray-800"
+                >
+                  <span className="text-3xl flex-shrink-0">{eq.emoji}</span>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-snug">
+                    {eq.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-4 text-center italic">
+              …or you could just keep it in the bank. Wild idea, we know. 💸
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Milestone progress */}
