@@ -24,6 +24,66 @@ import { useDreamVault } from "@/hooks/useDreamVault";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product, DreamVaultCategory } from "@/types";
 
+type VariantGroup = { label: string; options: string[] };
+
+function getVariants(product: Product): VariantGroup[] {
+  const { category, subcategory } = product;
+
+  if (category === "sarees") {
+    return [
+      { label: "Blouse Size", options: ["32", "34", "36", "38", "40", "42"] },
+    ];
+  }
+  if (category === "kurtis") {
+    return [
+      { label: "Size", options: ["XS", "S", "M", "L", "XL", "XXL", "3XL"] },
+    ];
+  }
+  if (category === "fashion" || category === "mens") {
+    if (subcategory === "Footwear") {
+      return [
+        { label: "Size (UK)", options: ["6", "7", "8", "9", "10", "11", "12"] },
+        { label: "Color", options: ["Black", "White", "Grey", "Navy"] },
+      ];
+    }
+    if (subcategory === "Formal" || subcategory === "Shirts") {
+      return [
+        { label: "Size", options: ["S", "M", "L", "XL", "XXL"] },
+        { label: "Fit", options: ["Regular", "Slim", "Relaxed"] },
+      ];
+    }
+    return [
+      { label: "Size", options: ["XS", "S", "M", "L", "XL", "XXL"] },
+    ];
+  }
+  if (category === "electronics") {
+    if (subcategory === "Smartphones") {
+      return [
+        { label: "Storage", options: ["128GB", "256GB", "512GB"] },
+        { label: "Color", options: ["Phantom Black", "Cream", "Green", "Lavender"] },
+      ];
+    }
+    if (subcategory === "Laptops") {
+      return [
+        { label: "Storage", options: ["256GB SSD", "512GB SSD", "1TB SSD"] },
+        { label: "RAM", options: ["8GB", "16GB", "24GB"] },
+      ];
+    }
+    if (subcategory === "Audio") {
+      return [
+        { label: "Color", options: ["Midnight Black", "Platinum Silver", "Navy Blue", "Stone"] },
+      ];
+    }
+    if (subcategory === "Wearables") {
+      return [
+        { label: "Color", options: ["Jet Black", "Rose Gold", "Silver", "Olive"] },
+        { label: "Strap", options: ["Silicone", "Metal", "Leather"] },
+      ];
+    }
+  }
+  return [];
+}
+
 const VAULT_OPTIONS: { id: DreamVaultCategory; label: string; emoji: string }[] = [
   { id: "dream_office", label: "Dream Office", emoji: "🖥️" },
   { id: "dream_home", label: "Dream Home", emoji: "🏠" },
@@ -67,6 +127,7 @@ export default function ProductPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showVaultPicker, setShowVaultPicker] = useState(false);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (staticProduct) return;
@@ -237,6 +298,47 @@ export default function ProductPage() {
               </ul>
             </div>
           )}
+
+          {/* Variant selectors */}
+          {(() => {
+            const variantGroups = getVariants(product);
+            if (variantGroups.length === 0) return null;
+            return (
+              <div className="space-y-4">
+                {variantGroups.map((group) => (
+                  <div key={group.label}>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{group.label}</p>
+                      {selectedVariants[group.label] && (
+                        <p className="text-xs font-medium text-zen-600 dark:text-zen-400">
+                          {selectedVariants[group.label]} selected
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {group.options.map((opt) => {
+                        const active = selectedVariants[group.label] === opt;
+                        return (
+                          <button
+                            key={opt}
+                            onClick={() => setSelectedVariants((prev) => ({ ...prev, [group.label]: opt }))}
+                            className={cn(
+                              "px-3.5 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-150 active:scale-95",
+                              active
+                                ? "zen-gradient text-white border-transparent shadow-md shadow-zen-500/20"
+                                : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-zen-400 dark:hover:border-zen-600 hover:text-zen-600 dark:hover:text-zen-400"
+                            )}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Quantity */}
           <div className="flex items-center gap-4">
