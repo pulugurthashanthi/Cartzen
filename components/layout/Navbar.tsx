@@ -27,6 +27,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useFirestoreSync } from "@/hooks/useFirestoreSync";
+import { useRewards } from "@/hooks/useRewards";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -47,6 +48,7 @@ export function Navbar() {
   const { items: wishlistItems } = useWishlist();
   const { user, isAdmin, signIn, signOut, loading } = useAuth();
   const { synced, syncing } = useFirestoreSync();
+  const { coins, engagement: { streakCurrent } } = useRewards();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -111,6 +113,22 @@ export function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {/* Coins + streak pill (reward visibility) */}
+            <Link
+              href="/rewards"
+              className="hidden sm:flex items-center gap-2 rounded-full border border-orange-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 hover:border-zen-300 transition-colors"
+              aria-label="Rewards"
+            >
+              <span className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                🪙 {coins}
+              </span>
+              {streakCurrent > 0 && (
+                <span className="flex items-center gap-0.5 text-xs font-bold text-orange-500">
+                  🔥 {streakCurrent}
+                </span>
+              )}
+            </Link>
+
             <button
               onClick={toggleTheme}
               className="btn-ghost p-2.5"

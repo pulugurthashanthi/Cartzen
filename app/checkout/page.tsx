@@ -1,9 +1,9 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, Plus, Shuffle, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, Plus, Shuffle, Check, Gift, Home } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
@@ -31,18 +31,16 @@ const RANDOM_ADDRESSES = [
   { fullName: "Priya Sharma", phone: "9123456780", line1: "15, Banjara Hills, Road No 12", city: "Hyderabad", state: "Telangana", pincode: "500034" },
   { fullName: "Amit Patel", phone: "9988776655", line1: "7, Juhu Tara Road, Juhu", city: "Mumbai", state: "Maharashtra", pincode: "400049" },
   { fullName: "Sunita Verma", phone: "9011223344", line1: "301, Lajpat Nagar II", city: "New Delhi", state: "Delhi", pincode: "110024" },
-  { fullName: "Karthik Nair", phone: "9876512345", line1: "22, Anna Salai, Teynampet", city: "Chennai", state: "Tamil Nadu", pincode: "600018" },
-  { fullName: "Deepa Menon", phone: "9445566778", line1: "5, Salt Lake Sector V", city: "Kolkata", state: "West Bengal", pincode: "700091" },
 ];
+
+// One-tap default so first-timers never have to type to place a fake order.
+const DEFAULT_ADDRESS: Address = {
+  fullName: "My Home", phone: "9000000000", line1: "Home", city: "Bengaluru", state: "Karnataka", pincode: "560001",
+};
 
 interface Address { fullName: string; phone: string; line1: string; city: string; state: string; pincode: string; }
 const EMPTY_ADDRESS: Address = { fullName: "", phone: "", line1: "", city: "", state: "", pincode: "" };
-type Step = "journal" | "address" | "review";
-const STEPS: { id: Step; label: string }[] = [
-  { id: "journal", label: "Mindset" },
-  { id: "address", label: "Address" },
-  { id: "review", label: "Place Order" },
-];
+type Step = "journal" | "confirm";
 
 function isAddressValid(a: Address): boolean {
   return !!(a.fullName.trim() && a.phone.trim().length >= 10 && a.line1.trim() && a.city.trim() && a.state && a.pincode.trim().length === 6);
@@ -71,11 +69,11 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("journal");
   const [selectedReason, setSelectedReason] = useState<ShoppingReason | null>(null);
   const [note, setNote] = useState("");
-  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [newAddress, setNewAddress] = useState<Address>(EMPTY_ADDRESS);
   const [placing, setPlacing] = useState(false);
 
-  // Parse unique saved addresses from order history
+  // Saved addresses from order history
   const savedAddresses = useMemo(() => {
     const seen = new Set<string>();
     const result: Address[] = [];
@@ -90,8 +88,13 @@ export default function CheckoutPage() {
     return result;
   }, [orders]);
 
-  const hasSaved = savedAddresses.length > 0;
-  const isSelected = isAddressValid(address);
+  // The selected address: defaults to most-recent saved, else the one-tap default.
+  const [address, setAddress] = useState<Address>(DEFAULT_ADDRESS);
+  const [addressTouched, setAddressTouched] = useState(false);
+  // Pre-select the latest saved address once known (unless user already picked one)
+  useEffect(() => {
+    if (!addressTouched && savedAddresses.length > 0) setAddress(savedAddresses[0]);
+  }, [savedAddresses, addressTouched]);
 
   if (items.length === 0) {
     return (
@@ -108,7 +111,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!selectedReason || !isAddressValid(address)) return;
     setPlacing(true);
-    await new Promise((r) => setTimeout(r, 1400));
+    await new Promise((r) => setTimeout(r, 900));
     const journalEntry = addEntry(selectedReason, note || undefined);
     const deliveryAddress = `${address.fullName}, ${address.line1}, ${address.city}, ${address.state} - ${address.pincode} | ${address.phone}`;
     const order = placeOrder(items, journalEntry, deliveryAddress);
@@ -116,18 +119,32 @@ export default function CheckoutPage() {
     router.push(`/checkout-success/${order.id}`);
   };
 
-  const selectAddress = (a: Address) => {
-    setAddress(a);
-    setShowNewForm(false);
-  };
-
   const useRandom = () => {
     const r = RANDOM_ADDRESSES[Math.floor(Math.random() * RANDOM_ADDRESSES.length)];
     setAddress(r);
-    setShowNewForm(true);
+    setAddressTouched(true);
+    setShowNewForm(false);
   };
 
+  const saveNewAddress = () => {
+    if (isAddressValid(newAddress)) {
+      setAddress(newAddress);
+      setAddressTouched(true);
+      setShowNewForm(false);
+    }
+  };
+
+  const STEPS: { id: Step; label: string }[] = [
+    { id: "journal", label: "Mindset" },
+    { id: "confirm", label: "Confirm" },
+  ];
   const stepIndex = STEPS.findIndex((s) => s.id === step);
+
+  // Address options shown as one-tap cards: default + saved (deduped)
+  const addressOptions: Address[] = useMemo(() => {
+    const opts = savedAddresses.length > 0 ? [...savedAddresses] : [DEFAULT_ADDRESS];
+    return opts;
+  }, [savedAddresses]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -161,187 +178,120 @@ export default function CheckoutPage() {
               <BookOpen className="w-7 h-7 text-calm-600 dark:text-calm-400" />
             </div>
             <h1 className="font-display text-2xl font-bold mb-2">Why are you shopping today?</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Understand your triggers. No judgment.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">One tap. Understand your triggers. No judgment.</p>
           </div>
           <div className="grid grid-cols-1 gap-3">
             {REASONS.map((reason) => (
               <button
                 key={reason.value}
-                onClick={() => setSelectedReason(reason.value)}
+                onClick={() => { setSelectedReason(reason.value); setStep("confirm"); }}
                 className={cn(
-                  "flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200",
+                  "flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 active:scale-[0.98]",
                   selectedReason === reason.value
                     ? "border-zen-500 bg-zen-50 dark:bg-zen-950/50"
                     : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-900"
                 )}
               >
                 <span className="text-2xl">{reason.emoji}</span>
-                <div>
+                <div className="flex-1">
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{reason.label}</p>
                   <p className="text-xs text-gray-500">{reason.description}</p>
                 </div>
-                <div className={cn(
-                  "ml-auto w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all",
-                  selectedReason === reason.value ? "border-zen-500 bg-zen-500" : "border-gray-300 dark:border-gray-600"
-                )} />
+                <ArrowRight className="w-4 h-4 text-gray-300" />
               </button>
             ))}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Any thoughts? (optional)</label>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g., I've been wanting this for months…" rows={3} className="input resize-none" />
-          </div>
-          <button onClick={() => setStep("address")} disabled={!selectedReason} className="btn-primary w-full">
-            Continue <ArrowRight className="w-4 h-4" />
-          </button>
+          <p className="text-center text-xs text-gray-400">Tap a reason to continue — that&apos;s the only required step.</p>
         </div>
       )}
 
-      {/* Step 2 — Address */}
-      {step === "address" && (
+      {/* Step 2 — Confirm (address one-tap + summary + place) */}
+      {step === "confirm" && (
         <div className="space-y-5 animate-fade-in">
           <button onClick={() => setStep("journal")} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <div className="text-center mb-2">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-3">
-              <MapPin className="w-7 h-7 text-blue-500" />
+
+          {/* Reward teaser */}
+          <div className="rounded-2xl p-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white flex items-center gap-3">
+            <Gift className="w-6 h-6 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-sm">A loot box is waiting! 🎁</p>
+              <p className="text-xs text-white/80">Place this order to open it + earn XP, coins, and badges.</p>
             </div>
-            <h1 className="font-display text-2xl font-bold mb-1">Delivery Address</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Where should we simulate the delivery?</p>
           </div>
 
-          {/* Quick actions */}
-          <div className="flex gap-2">
-            <button
-              onClick={useRandom}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Shuffle className="w-4 h-4 text-purple-500" /> Random Address
-            </button>
-            {hasSaved && !showNewForm && (
-              <button
-                onClick={() => { setShowNewForm(true); setAddress(EMPTY_ADDRESS); }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Plus className="w-4 h-4 text-green-500" /> New Address
-              </button>
+          {/* Address — one tap */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-blue-500" /> Deliver to
+              </p>
+              <div className="flex gap-3">
+                <button onClick={useRandom} className="text-xs font-medium text-purple-500 hover:underline flex items-center gap-1">
+                  <Shuffle className="w-3 h-3" /> Random
+                </button>
+                <button onClick={() => { setShowNewForm((v) => !v); setNewAddress(EMPTY_ADDRESS); }} className="text-xs font-medium text-green-600 hover:underline flex items-center gap-1">
+                  <Plus className="w-3 h-3" /> New
+                </button>
+              </div>
+            </div>
+
+            {!showNewForm && (
+              <div className="space-y-2">
+                {addressOptions.map((a, i) => {
+                  const chosen = address.line1 === a.line1 && address.pincode === a.pincode;
+                  const isDefault = a === DEFAULT_ADDRESS;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => { setAddress(a); setAddressTouched(true); }}
+                      className={cn(
+                        "w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3",
+                        chosen ? "border-zen-500 bg-zen-50 dark:bg-zen-950/50" : "border-gray-200 dark:border-gray-800 hover:border-gray-300 bg-white dark:bg-gray-900"
+                      )}
+                    >
+                      <div className={cn("w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center", chosen ? "border-zen-500 bg-zen-500" : "border-gray-300 dark:border-gray-600")}>
+                        {chosen && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="text-sm flex-1">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                          {isDefault && <Home className="w-3.5 h-3.5 text-zen-500" />}
+                          {a.fullName}{isDefault && <span className="text-xs font-normal text-gray-400">(default)</span>}
+                        </p>
+                        <p className="text-gray-500">{a.line1}, {a.city}, {a.state} - {a.pincode}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* New address form (optional) */}
+            {showNewForm && (
+              <div className="card p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input className="input" placeholder="Full Name" value={newAddress.fullName} onChange={(e) => setNewAddress({ ...newAddress, fullName: e.target.value })} />
+                  <input className="input" placeholder="Phone" maxLength={10} value={newAddress.phone} onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value.replace(/\D/g, "") })} />
+                </div>
+                <input className="input" placeholder="Address" value={newAddress.line1} onChange={(e) => setNewAddress({ ...newAddress, line1: e.target.value })} />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <input className="input" placeholder="City" value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} />
+                  <select className="input" value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}>
+                    <option value="">State</option>
+                    {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <input className="input col-span-2 sm:col-span-1" placeholder="Pincode" maxLength={6} value={newAddress.pincode} onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value.replace(/\D/g, "") })} />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={saveNewAddress} disabled={!isAddressValid(newAddress)} className="btn-primary flex-1">Use this address</button>
+                  <button onClick={() => setShowNewForm(false)} className="btn-secondary">Cancel</button>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Saved addresses */}
-          {hasSaved && !showNewForm && (
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Saved Addresses</p>
-              {savedAddresses.map((a, i) => {
-                const isChosen = address.line1 === a.line1 && address.pincode === a.pincode;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => selectAddress(a)}
-                    className={cn(
-                      "w-full text-left p-4 rounded-xl border-2 transition-all",
-                      isChosen
-                        ? "border-zen-500 bg-zen-50 dark:bg-zen-950/50"
-                        : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-900"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn("w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all",
-                        isChosen ? "border-zen-500 bg-zen-500" : "border-gray-300 dark:border-gray-600"
-                      )}>
-                        {isChosen && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{a.fullName}</p>
-                        <p className="text-gray-500">{a.line1}, {a.city}, {a.state} - {a.pincode}</p>
-                        <p className="text-gray-400 text-xs mt-0.5">📞 {a.phone}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => { setShowNewForm(true); setAddress(EMPTY_ADDRESS); }}
-                className="w-full flex items-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-500 hover:border-zen-300 hover:text-zen-500 transition-all text-sm font-medium"
-              >
-                <Plus className="w-4 h-4" /> Add New Address
-              </button>
-            </div>
-          )}
-
-          {/* New address form */}
-          {(!hasSaved || showNewForm) && (
-            <div className="card p-5 space-y-4">
-              {hasSaved && (
-                <button onClick={() => { setShowNewForm(false); setAddress(EMPTY_ADDRESS); }} className="text-xs text-zen-500 hover:text-zen-600 font-medium flex items-center gap-1">
-                  <ArrowLeft className="w-3 h-3" /> Back to saved
-                </button>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Full Name *</label>
-                  <input className="input" placeholder="Ravi Kumar" value={address.fullName} onChange={(e) => setAddress({ ...address, fullName: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Phone *</label>
-                  <input className="input" placeholder="9876543210" maxLength={10} value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value.replace(/\D/g, "") })} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Address *</label>
-                <input className="input" placeholder="House No, Street, Area" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">City *</label>
-                  <input className="input" placeholder="Bangalore" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">State *</label>
-                  <select className="input" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })}>
-                    <option value="">Select</option>
-                    {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Pincode *</label>
-                  <input className="input" placeholder="560001" maxLength={6} value={address.pincode} onChange={(e) => setAddress({ ...address, pincode: e.target.value.replace(/\D/g, "") })} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={() => setStep("review")}
-            disabled={!isSelected}
-            className="btn-primary w-full"
-          >
-            Review Order <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Step 3 — Review */}
-      {step === "review" && (
-        <div className="space-y-6 animate-fade-in">
-          <button onClick={() => setStep("address")} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-
-          {/* Address summary */}
-          <div className="card p-4 border-blue-100 dark:border-blue-900">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm flex-1">
-                <p className="font-semibold text-gray-900 dark:text-gray-100">{address.fullName} · {address.phone}</p>
-                <p className="text-gray-500">{address.line1}, {address.city}, {address.state} - {address.pincode}</p>
-              </div>
-              <button onClick={() => setStep("address")} className="text-xs text-zen-500 hover:text-zen-600 font-medium">Change</button>
-            </div>
-          </div>
-
-          {/* Order items */}
+          {/* Order summary */}
           <div className="card p-5">
             <h2 className="font-semibold mb-4">Order Summary ({items.length} item{items.length !== 1 ? "s" : ""})</h2>
             <div className="space-y-3 mb-4">
@@ -360,31 +310,21 @@ export default function CheckoutPage() {
             </div>
             <div className="space-y-1.5 pt-3 border-t border-gray-100 dark:border-gray-800 text-sm">
               <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatPrice(total)}</span></div>
-              <div className="flex justify-between text-green-600 dark:text-green-400"><span>Delivery</span><span>FREE</span></div>
+              <div className="flex justify-between text-green-600 dark:text-green-400"><span>You pay</span><span className="font-bold">₹0</span></div>
               <div className="flex justify-between font-bold text-base pt-1 border-t border-gray-100 dark:border-gray-800">
-                <span>Total</span><span className="zen-gradient-text">{formatPrice(total)}</span>
+                <span>You save</span><span className="zen-gradient-text">{formatPrice(total)}</span>
               </div>
             </div>
           </div>
 
-          <div className="card p-4 bg-calm-50 dark:bg-calm-950/30 border-calm-100 dark:border-calm-900">
-            <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-calm-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-calm-700 dark:text-calm-400">
-                <span className="font-semibold">You're saving {formatPrice(total)}!</span>{" "}
-                No payment, no delivery — 100% simulation.
-              </p>
-            </div>
-          </div>
-
-          <button onClick={handlePlaceOrder} disabled={placing} className="btn-primary w-full text-base py-4">
+          <button onClick={handlePlaceOrder} disabled={placing || !isAddressValid(address)} className="btn-primary w-full text-base py-4">
             {placing ? (
-              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Placing Order…</>
+              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Placing…</>
             ) : (
-              <><Sparkles className="w-4 h-4" /> Place Simulated Order</>
+              <><Sparkles className="w-4 h-4" /> Place Order & Open Loot Box</>
             )}
           </button>
-          <p className="text-center text-xs text-gray-400">No real payment · No real delivery · 100% savings</p>
+          <p className="text-center text-xs text-gray-400">No payment · No real delivery · 100% savings</p>
         </div>
       )}
     </div>

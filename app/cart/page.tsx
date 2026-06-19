@@ -282,11 +282,20 @@ export default function CartPage() {
               </p>
             </div>
 
+            {/* Reward teaser — makes the payoff visible before checkout */}
+            <div className="p-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white flex items-center gap-2.5">
+              <span className="text-2xl">🎁</span>
+              <div>
+                <p className="text-sm font-bold leading-tight">Checkout = 1 guaranteed loot box</p>
+                <p className="text-[11px] text-white/80">+ XP, Zen Coins, and a shot at a Legendary badge</p>
+              </div>
+            </div>
+
             <Link
               href="/checkout"
               className="btn-primary w-full"
             >
-              Place My (Free) Order 🛍️
+              Place Order & Open Loot Box 🎁
               <ArrowRight className="w-4 h-4" />
             </Link>
 
