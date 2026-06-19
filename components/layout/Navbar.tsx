@@ -50,8 +50,8 @@ export function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-white/90 dark:bg-gray-950/90 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800"
-          : "bg-white dark:bg-gray-950"
+          ? "bg-white/92 dark:bg-gray-950/92 backdrop-blur-md shadow-md shadow-orange-100/50 dark:shadow-none border-b border-orange-100 dark:border-gray-800"
+          : "bg-white/95 dark:bg-gray-950 border-b border-orange-50 dark:border-transparent"
       )}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,8 +75,8 @@ export function Navbar() {
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === link.href
-                    ? "bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-semibold"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-orange-50/60 dark:hover:bg-gray-800"
                 )}
               >
                 {link.label}
@@ -88,8 +88,8 @@ export function Navbar() {
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === "/admin"
-                    ? "bg-zen-50 dark:bg-zen-950 text-zen-700 dark:text-zen-400"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-semibold"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-orange-50/60 dark:hover:bg-gray-800"
                 )}
               >
                 <Shield className="w-4 h-4" />

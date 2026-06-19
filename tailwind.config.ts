@@ -10,30 +10,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Primary — warm coral-orange
         zen: {
-          50: "#f0fdf9",
-          100: "#ccfbef",
-          200: "#99f6e0",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
-          950: "#042f2e",
+          50: "#fff7ed",
+          100: "#ffedd5",
+          200: "#fed7aa",
+          300: "#fdba74",
+          400: "#fb923c",
+          500: "#f97316",
+          600: "#ea580c",
+          700: "#c2410c",
+          800: "#9a3412",
+          900: "#7c2d12",
+          950: "#431407",
         },
+        // Secondary — vivid fuchsia/magenta
         calm: {
-          50: "#faf5ff",
-          100: "#f3e8ff",
-          200: "#e9d5ff",
-          300: "#d8b4fe",
-          400: "#c084fc",
-          500: "#a855f7",
-          600: "#9333ea",
-          700: "#7e22ce",
-          800: "#6b21a8",
-          900: "#581c87",
+          50: "#fdf4ff",
+          100: "#fae8ff",
+          200: "#f5d0fe",
+          300: "#f0abfc",
+          400: "#e879f9",
+          500: "#d946ef",
+          600: "#c026d3",
+          700: "#a21caf",
+          800: "#86198f",
+          900: "#701a75",
+          950: "#4a044e",
         },
         sand: {
           50: "#fefce8",
@@ -54,6 +57,8 @@ const config: Config = {
         "slide-in-right": "slideInRight 0.3s ease-out",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "bounce-gentle": "bounceGentle 2s infinite",
+        "float": "float 6s ease-in-out infinite",
+        "float-slow": "float 9s ease-in-out infinite",
         shimmer: "shimmer 1.5s infinite",
       },
       keyframes: {
@@ -69,6 +74,11 @@ const config: Config = {
         bounceGentle: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-6px)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+          "33%": { transform: "translateY(-12px) rotate(3deg)" },
+          "66%": { transform: "translateY(-6px) rotate(-2deg)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
