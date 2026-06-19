@@ -8,6 +8,9 @@ export function useJournal() {
 
   useEffect(() => {
     setEntries(journalStorage.get());
+    const onSync = () => setEntries(journalStorage.get());
+    window.addEventListener("cartzen:synced", onSync);
+    return () => window.removeEventListener("cartzen:synced", onSync);
   }, []);
 
   const addEntry = useCallback((reason: ShoppingReason, note?: string): JournalEntry => {

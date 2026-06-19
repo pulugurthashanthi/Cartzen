@@ -12,6 +12,12 @@ export function useOrders() {
   useEffect(() => {
     setOrders(ordersStorage.get());
     setSavings(savingsStorage.get());
+    const onSync = () => {
+      setOrders(ordersStorage.get());
+      setSavings(savingsStorage.get());
+    };
+    window.addEventListener("cartzen:synced", onSync);
+    return () => window.removeEventListener("cartzen:synced", onSync);
   }, []);
 
   const placeOrder = useCallback(

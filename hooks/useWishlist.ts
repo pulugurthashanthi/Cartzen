@@ -13,9 +13,11 @@ export function useWishlist() {
     const sync = () => setItems(wishlistStorage.get());
     window.addEventListener(WISHLIST_EVENT, sync);
     window.addEventListener("storage", sync);
+    window.addEventListener("cartzen:synced", sync);
     return () => {
       window.removeEventListener(WISHLIST_EVENT, sync);
       window.removeEventListener("storage", sync);
+      window.removeEventListener("cartzen:synced", sync);
     };
   }, []);
 

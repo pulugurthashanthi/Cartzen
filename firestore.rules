@@ -9,7 +9,7 @@ service cloud.firestore {
         request.auth.token.email == "shanthi87p@gmail.com";
     }
 
-    // Users: authenticated users can read their own doc, admin can read all
+    // Users: each user owns their document and their data subcollection
     match /users/{userId} {
       allow read: if request.auth != null &&
         (request.auth.uid == userId ||
@@ -17,6 +17,11 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null &&
         request.auth.token.email == "shanthi87p@gmail.com";
+
+      // CartZen data subcollection — only the owner can read/write
+      match /data/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }

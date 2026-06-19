@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ToastContainer } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/PWARegister";
+import { SyncProvider } from "@/components/SyncProvider";
 
 export const metadata: Metadata = {
   title: "CartZen — Shop Without Spending",
@@ -37,6 +38,7 @@ export default function RootLayout({
             <main className="pt-16">{children}</main>
             <ToastContainer />
             <PWARegister />
+            <SyncProvider />
           </CartProvider>
         </AuthProvider>
       </body>

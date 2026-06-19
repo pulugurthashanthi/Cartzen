@@ -24,6 +24,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useFirestoreSync } from "@/hooks/useFirestoreSync";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -41,6 +42,7 @@ export function Navbar() {
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, isAdmin, signIn, signOut, loading } = useAuth();
+  const { synced, syncing } = useFirestoreSync();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -138,6 +140,14 @@ export function Navbar() {
             {!loading && (
               user ? (
                 <div className="flex items-center gap-2">
+                  {/* Cloud sync indicator */}
+                  <div
+                    title={syncing ? "Syncing…" : synced ? "Data synced to cloud" : ""}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      syncing ? "bg-amber-400 animate-pulse" : synced ? "bg-green-400" : "bg-gray-300"
+                    )}
+                  />
                   {user.photoURL && (
                     <Image
                       src={user.photoURL}

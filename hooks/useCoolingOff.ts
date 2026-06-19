@@ -8,6 +8,9 @@ export function useCoolingOff() {
 
   useEffect(() => {
     setItems(coolingOffStorage.get());
+    const onSync = () => setItems(coolingOffStorage.get());
+    window.addEventListener("cartzen:synced", onSync);
+    return () => window.removeEventListener("cartzen:synced", onSync);
   }, []);
 
   const addItem = useCallback(
