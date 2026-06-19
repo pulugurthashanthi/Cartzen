@@ -215,6 +215,29 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Reality Check insights */}
+        {(() => {
+          const checked = orders.filter((o) => o.status === "delivered" && o.realityCheck);
+          if (checked.length < 2) return null;
+          const gone = checked.filter((o) => o.realityCheck?.response === "no").length;
+          const pct = Math.round((gone / checked.length) * 100);
+          return (
+            <div className="card p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl">🔍</span>
+                <h2 className="font-semibold">Reality Check</h2>
+              </div>
+              <p className="text-4xl font-bold zen-gradient-text mb-1">{pct}%</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
+                of items were <span className="font-semibold">no longer wanted</span> after reflection
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Based on {checked.length} reality checks
+              </p>
+            </div>
+          );
+        })()}
+
         {/* Achievements */}
         {achieved.length > 0 && (
           <div className="card p-5">

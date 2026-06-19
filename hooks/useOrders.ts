@@ -38,9 +38,9 @@ export function useOrders() {
       setOrders((prev) => [order, ...prev]);
       setSavings((prev) => prev + total);
 
-      // Simulate order progression
+      // Simulate day-by-day delivery (compressed to seconds for demo)
       let currentOrder = order;
-      const delays = [3000, 6000, 10000, 15000];
+      const delays = [4000, 8000, 14000, 22000];
       delays.forEach((delay) => {
         setTimeout(() => {
           currentOrder = advanceOrderStatus(currentOrder);
@@ -68,5 +68,26 @@ export function useOrders() {
     setSavings(savingsStorage.get());
   }, []);
 
-  return { orders, savings, placeOrder, getOrder, refreshOrders };
+  const markUnboxed = useCallback((orderId: string) => {
+    const updated = ordersStorage.get().map((o) =>
+      o.id === orderId ? { ...o, unboxed: true } : o
+    );
+    ordersStorage.set(updated);
+    setOrders(updated);
+  }, []);
+
+  const saveRealityCheck = useCallback(
+    (orderId: string, response: "yes" | "maybe" | "no") => {
+      const updated = ordersStorage.get().map((o) =>
+        o.id === orderId
+          ? { ...o, realityCheck: { response, timestamp: new Date().toISOString() } }
+          : o
+      );
+      ordersStorage.set(updated);
+      setOrders(updated);
+    },
+    []
+  );
+
+  return { orders, savings, placeOrder, getOrder, refreshOrders, markUnboxed, saveRealityCheck };
 }

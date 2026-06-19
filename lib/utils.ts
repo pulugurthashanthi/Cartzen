@@ -32,34 +32,49 @@ export function generateOrderId(): string {
   return id;
 }
 
-export const ORDER_STEPS: { status: OrderStatus; label: string; description: string }[] =
-  [
-    {
-      status: "placed",
-      label: "Order Placed",
-      description: "Your order has been received",
-    },
-    {
-      status: "packed",
-      label: "Packed",
-      description: "Items carefully packed and ready",
-    },
-    {
-      status: "shipped",
-      label: "Shipped",
-      description: "On its way to your city",
-    },
-    {
-      status: "out_for_delivery",
-      label: "Out for Delivery",
-      description: "With delivery partner",
-    },
-    {
-      status: "delivered",
-      label: "Delivered",
-      description: "Enjoy your purchase!",
-    },
-  ];
+export const ORDER_STEPS: {
+  status: OrderStatus;
+  label: string;
+  dayLabel: string;
+  descriptionTemplate: string;
+  emoji: string;
+}[] = [
+  {
+    status: "placed",
+    label: "Order Confirmed",
+    dayLabel: "Day 1 · Morning",
+    descriptionTemplate: "Your order is confirmed and sent to the warehouse.",
+    emoji: "📋",
+  },
+  {
+    status: "packed",
+    label: "Packed & Ready",
+    dayLabel: "Day 1 · Afternoon",
+    descriptionTemplate: "{{product}} has been carefully packed and labelled.",
+    emoji: "📦",
+  },
+  {
+    status: "shipped",
+    label: "In Transit",
+    dayLabel: "Day 2 · Morning",
+    descriptionTemplate: "Package picked up — heading to your city's hub.",
+    emoji: "🚚",
+  },
+  {
+    status: "out_for_delivery",
+    label: "Out for Delivery",
+    dayLabel: "Day 3 · Morning",
+    descriptionTemplate: "Delivery partner is on the way. Be home!",
+    emoji: "🛵",
+  },
+  {
+    status: "delivered",
+    label: "Delivered!",
+    dayLabel: "Day 3 · Evening",
+    descriptionTemplate: "Package left at your doorstep. Open it! 🎁",
+    emoji: "🎉",
+  },
+];
 
 const STATUS_ORDER: OrderStatus[] = [
   "placed",
@@ -71,12 +86,18 @@ const STATUS_ORDER: OrderStatus[] = [
 
 export function getStatusSteps(order: Order): OrderStatusStep[] {
   const currentIndex = STATUS_ORDER.indexOf(order.status);
+  const mainProduct = order.items[0]?.product.name ?? "your item";
   return ORDER_STEPS.map((step, i) => {
     const historyEntry = order.statusHistory.find(
       (h) => h.status === step.status
     );
+    const description = step.descriptionTemplate.replace("{{product}}", `"${mainProduct}"`);
     return {
-      ...step,
+      status: step.status,
+      label: step.label,
+      description,
+      dayLabel: step.dayLabel,
+      emoji: step.emoji,
       timestamp: historyEntry?.timestamp,
       completed: i < currentIndex,
       current: i === currentIndex,

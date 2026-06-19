@@ -3,6 +3,7 @@ import type {
   CoolingOffItem,
   Order,
   JournalEntry,
+  DreamVaultItem,
 } from "@/types";
 
 const KEYS = {
@@ -12,6 +13,7 @@ const KEYS = {
   JOURNAL: "cartzen_journal",
   SAVINGS: "cartzen_savings",
   THEME: "cartzen_theme",
+  DREAM_VAULT: "cartzen_dream_vault",
 } as const;
 
 function safeGet<T>(key: string, fallback: T): T {
@@ -80,4 +82,10 @@ export const savingsStorage = {
 export const themeStorage = {
   get: (): "light" | "dark" => safeGet(KEYS.THEME, "light"),
   set: (theme: "light" | "dark") => safeSet(KEYS.THEME, theme),
+};
+
+// Dream Vault
+export const dreamVaultStorage = {
+  get: (): DreamVaultItem[] => safeGet(KEYS.DREAM_VAULT, []),
+  set: (items: DreamVaultItem[]) => safeSet(KEYS.DREAM_VAULT, items),
 };

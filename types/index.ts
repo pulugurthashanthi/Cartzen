@@ -51,6 +51,8 @@ export interface OrderStatusStep {
   status: OrderStatus;
   label: string;
   description: string;
+  dayLabel?: string;
+  emoji?: string;
   timestamp?: string;
   completed: boolean;
   current: boolean;
@@ -65,6 +67,23 @@ export interface Order {
   statusHistory: { status: OrderStatus; timestamp: string }[];
   deliveryAddress: string;
   journalEntry?: JournalEntry;
+  unboxed?: boolean;
+  realityCheck?: { response: "yes" | "maybe" | "no"; timestamp: string };
+}
+
+// Dream Vault
+export type DreamVaultCategory =
+  | "dream_office"
+  | "dream_home"
+  | "dream_travel"
+  | "dream_garage"
+  | "dream_style";
+
+export interface DreamVaultItem {
+  productId: string;
+  product: Product;
+  vaultCategory: DreamVaultCategory;
+  addedAt: string;
 }
 
 // Cooling-Off List

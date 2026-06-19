@@ -20,8 +20,17 @@ import { db } from "@/lib/firebase";
 import { products, reviews } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
+import { useDreamVault } from "@/hooks/useDreamVault";
 import { formatPrice, cn } from "@/lib/utils";
-import type { Product } from "@/types";
+import type { Product, DreamVaultCategory } from "@/types";
+
+const VAULT_OPTIONS: { id: DreamVaultCategory; label: string; emoji: string }[] = [
+  { id: "dream_office", label: "Dream Office", emoji: "🖥️" },
+  { id: "dream_home", label: "Dream Home", emoji: "🏠" },
+  { id: "dream_travel", label: "Dream Travel", emoji: "✈️" },
+  { id: "dream_garage", label: "Dream Garage", emoji: "🚗" },
+  { id: "dream_style", label: "Dream Style", emoji: "👗" },
+];
 
 function normalizeFirestoreProduct(id: string, data: Record<string, unknown>): Product {
   return {
@@ -53,9 +62,11 @@ export default function ProductPage() {
   const [loadingProduct, setLoadingProduct] = useState(!staticProduct);
   const { addItem, items } = useCart();
   const { addItem: addToCooling, isInCoolingOff } = useCoolingOff();
+  const { addItem: addToVault, removeItem: removeFromVault, isInVault, getVaultCategory } = useDreamVault();
   const [activeImage, setActiveImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [showVaultPicker, setShowVaultPicker] = useState(false);
 
   useEffect(() => {
     if (staticProduct) return;
@@ -293,6 +304,50 @@ export default function ProductPage() {
               ❄️ In cooling-off list — we'll check if you still want this after 24h
             </p>
           )}
+
+          {/* Dream Vault */}
+          <div className="relative">
+            {isInVault(product.id) ? (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-fuchsia-50 dark:bg-fuchsia-950/20 border border-fuchsia-100 dark:border-fuchsia-900">
+                <span className="text-lg">{VAULT_OPTIONS.find(v => v.id === getVaultCategory(product.id))?.emoji ?? "✨"}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-fuchsia-700 dark:text-fuchsia-400">
+                    Saved to {VAULT_OPTIONS.find(v => v.id === getVaultCategory(product.id))?.label}
+                  </p>
+                  <button
+                    onClick={() => removeFromVault(product.id)}
+                    className="text-xs text-fuchsia-500 hover:text-fuchsia-700 transition-colors"
+                  >
+                    Remove from vault
+                  </button>
+                </div>
+                <Link href="/dream-vault" className="text-xs font-medium text-fuchsia-600 dark:text-fuchsia-400 hover:underline flex-shrink-0">
+                  View vault →
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowVaultPicker((v) => !v)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-fuchsia-200 dark:border-fuchsia-900 text-fuchsia-600 dark:text-fuchsia-400 text-sm font-medium hover:bg-fuchsia-50 dark:hover:bg-fuchsia-950/20 transition-colors"
+              >
+                ✨ Save to Dream Vault
+              </button>
+            )}
+            {showVaultPicker && !isInVault(product.id) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-xl shadow-orange-100/50 p-2 z-10">
+                {VAULT_OPTIONS.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => { addToVault(product, v.id); setShowVaultPicker(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors text-left"
+                  >
+                    <span className="text-xl">{v.emoji}</span>
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Trust badges */}
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">

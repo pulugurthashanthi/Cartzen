@@ -124,6 +124,25 @@
   }
 }
 
+/* Confetti fall */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  animation: confettiFall var(--duration, 2s) ease-in var(--delay, 0s) forwards;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

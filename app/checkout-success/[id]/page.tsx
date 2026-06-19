@@ -47,21 +47,17 @@ export default function CheckoutSuccessPage() {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-green-950/20 dark:to-gray-950 px-4 py-10">
       <div className={`max-w-lg mx-auto transition-all duration-700 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
 
-        {/* Success banner — like Amazon */}
-        <div className="bg-white dark:bg-gray-900 border border-green-200 dark:border-green-800 rounded-2xl p-6 mb-5 text-center shadow-sm">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-              <CheckCircle className="w-9 h-9 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-          <h1 className="font-display text-2xl font-bold text-green-700 dark:text-green-400 mb-1">
-            Order Placed Successfully!
+        {/* Success banner */}
+        <div className="zen-gradient rounded-2xl p-6 mb-5 text-center shadow-xl shadow-orange-300/30">
+          <div className="text-5xl mb-3 animate-bounce-gentle">💰</div>
+          <h1 className="font-display text-3xl font-bold text-white mb-1">
+            {order ? formatPrice(order.total) : "Money"} Saved!
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            You'll receive a simulated confirmation shortly.
+          <p className="text-white/80 text-sm font-medium mb-2">
+            🎯 Purchase Craving Successfully Completed
           </p>
           {order && (
-            <p className="mt-3 text-xs font-mono text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-1.5 inline-block">
+            <p className="text-xs font-mono text-white/60 bg-white/10 rounded-lg px-3 py-1.5 inline-block mt-1">
               Order #{order.id}
             </p>
           )}
