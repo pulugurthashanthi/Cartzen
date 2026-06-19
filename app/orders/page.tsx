@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Package, ChevronRight, ShoppingBag, Truck } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
+import { CartBuddy } from "@/components/ui/CartBuddy";
 import { formatPrice, formatDate, cn } from "@/lib/utils";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -33,16 +34,17 @@ export default function OrdersPage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="w-20 h-20 rounded-2xl zen-gradient-soft dark:from-zen-950 dark:to-calm-950 flex items-center justify-center mx-auto mb-6 text-3xl">
-            📦
-          </div>
-          <h2 className="font-display text-2xl font-bold mb-2">No orders yet</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            Your simulated orders will appear here. Start shopping!
+          <CartBuddy mood="empty" size="lg" className="justify-center mb-6" />
+          <h2 className="font-display text-2xl font-bold mb-2">No fake orders yet!</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+            Your imaginary shipping history is as empty as your regrets.
+          </p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
+            Let's fill one of those. (The orders, not the regrets.)
           </p>
           <Link href="/" className="btn-primary">
             <ShoppingBag className="w-4 h-4" />
-            Start Shopping
+            Start Not-Spending
           </Link>
         </div>
       </div>
@@ -51,9 +53,12 @@ export default function OrdersPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="font-display text-2xl md:text-3xl font-bold mb-2">My Orders</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
-        {orders.length} simulated order{orders.length !== 1 ? "s" : ""} placed
+      <h1 className="font-display text-2xl md:text-3xl font-bold mb-1">My Orders</h1>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+        {orders.length} legendary act{orders.length !== 1 ? "s" : ""} of not-actually-spending
+      </p>
+      <p className="text-xs text-gray-400 mb-8">
+        Total saved: <span className="font-semibold zen-gradient-text">{formatPrice(orders.reduce((s, o) => s + o.total, 0))}</span> · Your bank account sends its regards 💐
       </p>
 
       <div className="space-y-4">

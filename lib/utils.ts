@@ -133,11 +133,11 @@ export function getAverageCartValue(orders: Order[]): number {
 }
 
 export const MILESTONES = [
-  { amount: 1000, label: "First ₹1,000 saved! 🎉" },
-  { amount: 5000, label: "₹5,000 saved! You're on a roll! 🚀" },
-  { amount: 10000, label: "₹10,000 saved! Amazing discipline! 💪" },
-  { amount: 25000, label: "₹25,000 saved! Financial guru! 🧘" },
-  { amount: 50000, label: "₹50,000 saved! Legendary! 👑" },
+  { amount: 1000, label: "₹1,000 saved! That's a dinner you ate at home instead. Respect. 🍜" },
+  { amount: 5000, label: "₹5,000! That's an Uber to the mall that you didn't take. Clever. 🛺" },
+  { amount: 10000, label: "₹10,000! ONE meal at a fancy restaurant. You chose dignity. 🥂" },
+  { amount: 25000, label: "₹25,000! A phone upgrade. A holiday. You chose sanity. Legend. 🌴" },
+  { amount: 50000, label: "₹50,000 saved!! At this point your savings account is your personality. 👑" },
 ];
 
 export function getNextMilestone(savings: number) {

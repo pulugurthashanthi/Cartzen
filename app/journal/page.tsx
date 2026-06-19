@@ -51,10 +51,13 @@ export default function JournalPage() {
 
       {total === 0 ? (
         <div className="text-center py-20">
-          <div className="text-5xl mb-4">📖</div>
-          <h3 className="font-semibold text-lg mb-2">Your journal is empty</h3>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Every time you checkout, we ask why you're shopping. Your answers appear here.
+          <div className="text-5xl mb-4 animate-bounce-gentle">📖</div>
+          <h3 className="font-semibold text-lg mb-2">No urges logged yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+            You're either very zen, or you haven't tried shopping yet.
+          </p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">
+            Every checkout asks WHY you're shopping. Spoiler: it's usually boredom. 😄
           </p>
         </div>
       ) : (

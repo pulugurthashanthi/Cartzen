@@ -59,12 +59,15 @@ export default function DashboardPage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-4">📊</div>
-          <h2 className="font-display text-2xl font-bold mb-2">No data yet</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            Place your first simulated order to start tracking your savings!
+          <div className="text-6xl mb-4 animate-bounce-gentle">📊</div>
+          <h2 className="font-display text-2xl font-bold mb-2">Nothing to report... yet</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+            Your savings dashboard is emptier than your motivation on a Monday.
           </p>
-          <Link href="/" className="btn-primary">Start Shopping</Link>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
+            Place your first fake order. This is the best financial advice you'll receive today.
+          </p>
+          <Link href="/" className="btn-primary">Start Saving (by Shopping)</Link>
         </div>
       </div>
     );

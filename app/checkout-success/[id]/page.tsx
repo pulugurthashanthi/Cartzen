@@ -9,6 +9,14 @@ import {
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
 
+const FUNNY_LINES = [
+  "Your imaginary package is in imaginary transit. The tracking is very real though.",
+  "Please don't try to return this. There is nothing to return. You're welcome.",
+  "Your credit card has been charged: ₹0. Your ego? Priceless.",
+  "Fun fact: No trees were harmed, no delivery driver was stressed, no money left. This is peak commerce.",
+  "Your order has been 'dispatched'. Our delivery owl is on the way. 🦉",
+];
+
 const MILESTONES = [1000, 5000, 10000, 25000, 50000, 100000];
 
 function getDeliveryDate() {
@@ -31,6 +39,7 @@ export default function CheckoutSuccessPage() {
   }, []);
 
   const order = getOrder(params.id as string);
+  const [funnyLine] = useState(() => FUNNY_LINES[Math.floor(Math.random() * FUNNY_LINES.length)]);
 
   const nextMilestone = MILESTONES.find((m) => m > savings);
   const prevMilestone = [...MILESTONES].reverse().find((m) => m <= savings) ?? 0;
@@ -53,9 +62,10 @@ export default function CheckoutSuccessPage() {
           <h1 className="font-display text-3xl font-bold text-white mb-1">
             {order ? formatPrice(order.total) : "Money"} Saved!
           </h1>
-          <p className="text-white/80 text-sm font-medium mb-2">
+          <p className="text-white/90 text-sm font-medium mb-1">
             🎯 Purchase Craving Successfully Completed
           </p>
+          <p className="text-white/60 text-xs italic px-2">{funnyLine}</p>
           {order && (
             <p className="text-xs font-mono text-white/60 bg-white/10 rounded-lg px-3 py-1.5 inline-block mt-1">
               Order #{order.id}

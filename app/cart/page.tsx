@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { CartBuddy } from "@/components/ui/CartBuddy";
 import { formatPrice, cn } from "@/lib/utils";
 
 export default function CartPage() {
@@ -23,16 +24,17 @@ export default function CartPage() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="w-20 h-20 rounded-2xl zen-gradient-soft dark:from-zen-950 dark:to-calm-950 flex items-center justify-center mx-auto mb-6 text-3xl">
-            🛒
-          </div>
-          <h2 className="font-display text-2xl font-bold mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            Browse our products and add something that catches your eye. No real money needed!
+          <CartBuddy mood="empty" size="lg" className="justify-center mb-6" />
+          <h2 className="font-display text-2xl font-bold mb-2">Cart's looking lonely 👀</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+            Your wallet is thriving though.
+          </p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
+            Go find something expensive to <em>not</em>-buy.
           </p>
           <Link href="/" className="btn-primary">
             <ShoppingBag className="w-4 h-4" />
-            Start Shopping
+            Browse Stuff (It's Free to Add)
           </Link>
         </div>
       </div>
@@ -48,12 +50,14 @@ export default function CartPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-2xl md:text-3xl font-bold">
-          My Cart
-          <span className="ml-2 text-base font-normal text-gray-400">
-            ({items.length} {items.length === 1 ? "item" : "items"})
-          </span>
-        </h1>
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold">
+            Your (Very Real) Imaginary Cart
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {items.length} item{items.length !== 1 ? "s" : ""} · Total damage to your wallet: ₹0
+          </p>
+        </div>
         <button
           onClick={clearCart}
           className="text-sm text-gray-400 hover:text-rose-500 transition-colors"
@@ -161,21 +165,18 @@ export default function CartPage() {
               <span className="font-bold text-xl zen-gradient-text">{formatPrice(total)}</span>
             </div>
 
-            <div className="p-3 rounded-xl bg-calm-50 dark:bg-calm-950/30 border border-calm-100 dark:border-calm-900">
-              <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-calm-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-calm-700 dark:text-calm-400">
-                  <span className="font-semibold">No real payment.</span> Simulated checkout — you'll save{" "}
-                  <span className="font-bold">{formatPrice(total)}</span> in your dashboard!
-                </p>
-              </div>
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+              <p className="text-xs text-amber-800 dark:text-amber-400 font-medium leading-relaxed">
+                ⚠️ <span className="font-bold">Warning:</span> You are about to "spend" {formatPrice(total)}.
+                In real life, this would hurt. Here, it does not. Proceed with reckless financial abandon.
+              </p>
             </div>
 
             <Link
               href="/checkout"
               className="btn-primary w-full"
             >
-              Proceed to Checkout
+              Place My (Free) Order 🛍️
               <ArrowRight className="w-4 h-4" />
             </Link>
 

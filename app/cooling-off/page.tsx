@@ -67,12 +67,15 @@ export default function CoolingOffPage() {
       {/* Items */}
       {items.length === 0 ? (
         <div className="text-center py-20">
-          <div className="text-5xl mb-4">❄️</div>
-          <h3 className="font-semibold text-lg mb-2">Nothing cooling off</h3>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            When you're tempted by something, add it here first. Check if you still want it after 24 hours.
+          <div className="text-5xl mb-4 animate-bounce-gentle">❄️</div>
+          <h3 className="font-semibold text-lg mb-2">Nothing on ice — yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+            Either you have incredible impulse control, or you haven't seen our products yet.
           </p>
-          <Link href="/" className="btn-primary">Browse Products</Link>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
+            When something tempts you, freeze it here. 70% of urges vanish in 24h. Science! 🧊
+          </p>
+          <Link href="/" className="btn-primary">Browse Products (Dangerously)</Link>
         </div>
       ) : (
         <div className="space-y-4">

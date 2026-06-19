@@ -10,6 +10,7 @@ import {
 import { useOrders } from "@/hooks/useOrders";
 import { getStatusSteps, formatPrice, cn } from "@/lib/utils";
 import { Confetti } from "@/components/ui/Confetti";
+import { CartBuddy } from "@/components/ui/CartBuddy";
 
 const REALITY_OPTIONS = [
   { value: "yes" as const, emoji: "😍", label: "Yes, still want it!" },
@@ -242,9 +243,9 @@ export default function TrackingPage() {
             <div className="card p-6 mb-5 overflow-hidden relative">
               {/* Unboxed product reveal */}
               <div className="text-center mb-5">
-                <div className="inline-block text-4xl mb-2 animate-bounce-gentle">🎉</div>
-                <h3 className="font-bold text-xl zen-gradient-text mb-1">Unboxed!</h3>
-                <p className="text-sm text-gray-500">Look at it. Really look at it.</p>
+                <CartBuddy mood="celebrating" size="sm" className="justify-center mb-4" />
+                <h3 className="font-bold text-xl zen-gradient-text mb-1">Unboxed! 🎉</h3>
+                <p className="text-sm text-gray-500">Look at it. Sit with it. Then ask yourself: still need it?</p>
               </div>
               {mainItem && (
                 <div className="relative w-48 h-48 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-orange-200/50 dark:shadow-orange-900/30 mb-5">

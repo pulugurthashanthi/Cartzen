@@ -11,11 +11,11 @@ import { formatPrice, cn } from "@/lib/utils";
 import type { ShoppingReason } from "@/types";
 
 const REASONS: { value: ShoppingReason; label: string; emoji: string; description: string }[] = [
-  { value: "bored", label: "Bored", emoji: "😴", description: "Nothing to do right now" },
-  { value: "stressed", label: "Stressed", emoji: "😰", description: "Need a mood boost" },
-  { value: "rewarding_myself", label: "Rewarding Myself", emoji: "🎁", description: "I deserve a treat" },
-  { value: "need_product", label: "Need It", emoji: "✅", description: "Genuine need" },
-  { value: "just_browsing", label: "Just Browsing", emoji: "👀", description: "Exploring options" },
+  { value: "bored", label: "Boredom", emoji: "😴", description: "The classic. Truly iconic." },
+  { value: "stressed", label: "Stress Shopping", emoji: "😰", description: "Retail therapy, but make it free" },
+  { value: "rewarding_myself", label: "Treating Myself", emoji: "🎁", description: "Queen/King behaviour, honestly" },
+  { value: "need_product", label: "I Actually Need It", emoji: "✅", description: "Suuure you do. (We believe you.)" },
+  { value: "just_browsing", label: "Just Browsing", emoji: "👀", description: "Narrator: they were not just browsing" },
 ];
 
 const STATES = [
