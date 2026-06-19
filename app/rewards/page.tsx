@@ -6,6 +6,7 @@ import { useRewards } from "@/hooks/useRewards";
 import { BADGES, RARITIES, getBadge } from "@/lib/rewards";
 import { LOGIN_CALENDAR, boxSkinGradient, getStoreItem, WEEKLY_REWARD } from "@/lib/engagement";
 import { XPBar } from "@/components/rewards/XPBar";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 import { sound } from "@/lib/sound";
 import { cn } from "@/lib/utils";
@@ -181,7 +182,7 @@ export default function RewardsPage() {
       <div className="grid grid-cols-3 gap-3 mb-6">
         <Link href="/store" className="card p-4 text-center hover:border-zen-300 transition-colors">
           <div className="text-2xl mb-1">🪙</div>
-          <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{zenPoints}</p>
+          <AnimatedNumber value={zenPoints} className="text-xl font-bold text-gray-900 dark:text-gray-100 block" />
           <p className="text-xs text-gray-400">Zen Coins</p>
         </Link>
         <div className="card p-4 text-center">

@@ -4,6 +4,7 @@ import { useRewards } from "@/hooks/useRewards";
 import { STORE_ITEMS } from "@/lib/engagement";
 import { showToast } from "@/components/ui/Toast";
 import { sound } from "@/lib/sound";
+import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 export default function StorePage() {
@@ -19,6 +20,7 @@ export default function StorePage() {
     }
     if (r.purchase(id)) {
       sound.reveal("rare");
+      haptics.success();
       showToast(`Unlocked ${name}! Equipped ✨`, "info");
     }
   };

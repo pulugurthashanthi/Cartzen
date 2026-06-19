@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { CartItem, Product } from "@/types";
 import { cartStorage } from "@/lib/storage";
+import { haptics } from "@/lib/haptics";
 
 interface CartContextType {
   items: CartItem[];
@@ -31,6 +32,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addItem = useCallback((product: Product, quantity = 1) => {
+    haptics.light();
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === product.id);
       const next = existing

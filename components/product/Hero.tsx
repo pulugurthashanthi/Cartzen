@@ -2,6 +2,7 @@
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice } from "@/lib/utils";
 import { CartBuddy } from "@/components/ui/CartBuddy";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 const stats = [
   { emoji: "💸", label: "Spent in total", value: "₹0" },
@@ -69,7 +70,7 @@ export function Hero() {
               </div>
               <div className="text-left">
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Money you definitely didn't spend</p>
-                <p className="font-bold text-2xl zen-gradient-text">{formatPrice(savings)}</p>
+                <AnimatedNumber value={savings} format={formatPrice} className="font-bold text-2xl zen-gradient-text" />
               </div>
             </div>
           )}

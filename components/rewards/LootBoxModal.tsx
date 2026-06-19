@@ -4,6 +4,7 @@ import { Gift, X } from "lucide-react";
 import { useRewards } from "@/hooks/useRewards";
 import { RARITIES, getBadge } from "@/lib/rewards";
 import { sound } from "@/lib/sound";
+import { haptics } from "@/lib/haptics";
 import { trackChallenge } from "@/lib/track";
 import { Confetti } from "@/components/ui/Confetti";
 import { cn } from "@/lib/utils";
@@ -58,11 +59,13 @@ export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title 
     setDrop(rolled);
     setPhase("opening");
     sound.open();
+    haptics.medium();
     trackChallenge("open_box");
 
     setTimeout(() => {
       setPhase("revealed");
       sound.reveal(rolled.rarity);
+      haptics.byRarity(rolled.rarity);
       if (!providedDrop) claimDrop(rolled);
     }, 1200);
   }, [phase, rollDrop, claimDrop, providedDrop]);
@@ -100,6 +103,16 @@ export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title 
             }}
           />
         </div>
+      )}
+
+      {/* Rarity edge-glow vignette (epic/legendary) */}
+      {phase === "revealed" && isBigWin && (
+        <div
+          className="absolute inset-0 pointer-events-none glow-pulse"
+          style={{
+            boxShadow: `inset 0 0 140px 40px ${drop?.rarity === "legendary" ? "rgba(251,191,36,0.45)" : "rgba(217,70,239,0.4)"}`,
+          }}
+        />
       )}
 
       {/* Confetti for epic/legendary */}

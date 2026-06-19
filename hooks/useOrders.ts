@@ -48,6 +48,7 @@ export function useOrders() {
       savingsStorage.add(total);
       setOrders((prev) => [order, ...prev]);
       setSavings((prev) => prev + total);
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("cartzen:savings-changed"));
       // No setTimeout needed — status is derived from placedAt on every read,
       // so the order progresses even if the user closes the app.
       return order;
