@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { ToastContainer } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "CartZen — Shop Without Spending",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <CartProvider>
             <Navbar />
             <main className="pt-16">{children}</main>
+            <ToastContainer />
           </CartProvider>
         </AuthProvider>
       </body>

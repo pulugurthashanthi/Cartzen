@@ -2,9 +2,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, ShoppingCart, Snowflake } from "lucide-react";
+import { Star, ShoppingCart, Snowflake, Check } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
+import { showToast } from "@/components/ui/Toast";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -115,19 +116,29 @@ export function ProductCard({ product, className }: ProductCardProps) {
             <ShoppingCart className="w-3.5 h-3.5" />
             {inCart ? "Go to Cart" : "Add to Cart"}
           </button>
-          <button
-            onClick={() => addToCooling(product)}
-            disabled={inCooling}
-            title="Add to Cooling-Off list"
-            className={cn(
-              "p-2.5 rounded-xl transition-all duration-200 active:scale-95",
-              inCooling
-                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-500"
-            )}
-          >
-            <Snowflake className="w-3.5 h-3.5" />
-          </button>
+          <div className="relative group/cool">
+            <button
+              onClick={() => {
+                if (inCooling) return;
+                addToCooling(product);
+                showToast(`"${product.name}" added to Cooling-Off ❄️`);
+              }}
+              disabled={inCooling}
+              className={cn(
+                "p-2.5 rounded-xl transition-all duration-200 active:scale-95",
+                inCooling
+                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500 cursor-default"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-500 hover:scale-110"
+              )}
+            >
+              {inCooling ? <Check className="w-3.5 h-3.5" /> : <Snowflake className="w-3.5 h-3.5" />}
+            </button>
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs whitespace-nowrap opacity-0 group-hover/cool:opacity-100 transition-opacity pointer-events-none">
+              {inCooling ? "In Cooling-Off list" : "Add to Cooling-Off"}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
