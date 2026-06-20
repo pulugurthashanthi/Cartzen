@@ -5,10 +5,11 @@ import { trackChallenge } from "@/lib/track";
 import type { CoolingOffItem, Product, ShoppingReason } from "@/types";
 
 export function useCoolingOff() {
-  const [items, setItems] = useState<CoolingOffItem[]>([]);
+  const [items, setItems] = useState<CoolingOffItem[]>(() =>
+    typeof window !== "undefined" ? coolingOffStorage.get() : []
+  );
 
   useEffect(() => {
-    setItems(coolingOffStorage.get());
     const onSync = () => setItems(coolingOffStorage.get());
     window.addEventListener("cartzen:synced", onSync);
     return () => window.removeEventListener("cartzen:synced", onSync);

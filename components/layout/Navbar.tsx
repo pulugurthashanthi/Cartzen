@@ -118,6 +118,7 @@ export function Navbar() {
               href="/rewards"
               className="hidden sm:flex items-center gap-2 rounded-full border border-orange-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 hover:border-zen-300 transition-colors"
               aria-label="Rewards"
+              title={`${coins} Zen Coins · 10 coins = ₹1 savings bonus at checkout`}
             >
               <span className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                 🪙 {coins}

@@ -1,14 +1,12 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { dreamVaultStorage } from "@/lib/storage";
 import type { DreamVaultItem, DreamVaultCategory, Product } from "@/types";
 
 export function useDreamVault() {
-  const [items, setItems] = useState<DreamVaultItem[]>([]);
-
-  useEffect(() => {
-    setItems(dreamVaultStorage.get());
-  }, []);
+  const [items, setItems] = useState<DreamVaultItem[]>(() =>
+    typeof window !== "undefined" ? dreamVaultStorage.get() : []
+  );
 
   const addItem = useCallback((product: Product, category: DreamVaultCategory) => {
     setItems((prev) => {

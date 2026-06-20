@@ -143,7 +143,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(staticProduct ?? null);
   const [loadingProduct, setLoadingProduct] = useState(!staticProduct);
   const { addItem, items } = useCart();
-  const { addItem: addToCooling, isInCoolingOff } = useCoolingOff();
+  const { addItem: addToCooling, isInCoolingOff, items: coolingItems } = useCoolingOff();
   const { addItem: addToVault, removeItem: removeFromVault, isInVault, getVaultCategory } = useDreamVault();
   const [activeImage, setActiveImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -176,6 +176,15 @@ export default function ProductPage() {
     trackChallenge("browse");
   }, [params.id]);
 
+  // Live countdown for cooling-off timer — ticks every second only when item is cooling.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const inCoolingNow = coolingItems.some((i) => i.productId === (params.id as string));
+    if (!inCoolingNow) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [coolingItems, params.id]);
+
   if (loadingProduct) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -199,6 +208,20 @@ export default function ProductPage() {
   const productReviews = reviews.filter((r) => r.productId === product.id);
   const inCart = items.some((i) => i.productId === product.id);
   const inCooling = isInCoolingOff(product.id);
+  const coolingItem = coolingItems.find((i) => i.productId === product.id);
+
+  const DEMO_DURATION_MS: Record<number, number> = { 1: 60_000, 7: 120_000, 30: 180_000 };
+  const coolDurationMs = DEMO_DURATION_MS[coolingItem?.coolOffDays ?? 1] ?? 60_000;
+  const coolRemainingMs = coolingItem ? Math.max(0, coolDurationMs - (now - new Date(coolingItem.addedAt).getTime())) : 0;
+  const coolExpired = inCooling && coolRemainingMs === 0;
+
+  function formatCoolRemaining(ms: number): string {
+    const s = Math.ceil(ms / 1000);
+    if (s <= 0) return "Done — check it!";
+    if (s < 60) return `${s}s left`;
+    return `${Math.ceil(s / 60)}m left`;
+  }
+
   const stockCount = 99;
   const ratingBreakdown = getRatingBreakdown(product.rating, product.reviewCount);
   const similarProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 6);
@@ -410,26 +433,31 @@ export default function ProductPage() {
                 <><ShoppingCart className="w-4 h-4" />{inCart ? "Add More" : "Add to Cart"}</>
               )}
             </button>
-            <button
-              onClick={() => addToCooling(product)}
-              disabled={inCooling}
-              aria-label={inCooling ? "Already in cooling-off list" : "Add to cooling-off list"}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl transition-all duration-200 active:scale-95 border-2 text-xs font-semibold whitespace-nowrap",
-                inCooling
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500 border-blue-200 dark:border-blue-800"
-                  : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-              )}
-            >
-              <Snowflake className="w-4 h-4 flex-shrink-0" />
-              {inCooling ? "Cooling" : "Cool Off"}
-            </button>
+            {inCooling ? (
+              <Link
+                href="/cooling-off"
+                aria-label="View cooling-off list"
+                className="flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl transition-all duration-200 active:scale-95 border-2 text-xs font-semibold whitespace-nowrap bg-blue-100 dark:bg-blue-900/50 text-blue-500 border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900"
+              >
+                <Snowflake className="w-4 h-4 flex-shrink-0" />
+                {coolExpired ? "Check Now!" : formatCoolRemaining(coolRemainingMs)}
+              </Link>
+            ) : (
+              <button
+                onClick={() => addToCooling(product)}
+                aria-label="Add to cooling-off list"
+                className="flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl transition-all duration-200 active:scale-95 border-2 text-xs font-semibold whitespace-nowrap border-gray-200 dark:border-gray-700 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              >
+                <Snowflake className="w-4 h-4 flex-shrink-0" />
+                Cool Off
+              </button>
+            )}
           </div>
 
           {inCooling && (
-            <p className="text-xs text-blue-500 text-center">
-              ❄️ In cooling-off list — we&apos;ll check if you still want this after 24h
-            </p>
+            <Link href="/cooling-off" className="text-xs text-blue-500 text-center hover:underline">
+              ❄️ {coolExpired ? "Cooling-off period done — ready to check!" : `Cooling off · ${formatCoolRemaining(coolRemainingMs)} · View list →`}
+            </Link>
           )}
 
           {/* Dream Vault */}
