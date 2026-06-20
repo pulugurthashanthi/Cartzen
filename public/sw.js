@@ -1,5 +1,5 @@
 // CartZen service worker — lightweight offline shell + runtime caching.
-const CACHE = "cartzen-v1";
+const CACHE = "cartzen-v2";
 const PRECACHE = ["/", "/offline", "/icon.svg"];
 
 self.addEventListener("install", (event) => {

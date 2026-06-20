@@ -123,8 +123,8 @@ export default function CheckoutPage() {
     const journalEntry = addEntry(selectedReason, note || undefined);
     const deliveryAddress = `${address.fullName}, ${address.line1}, ${address.city}, ${address.state} - ${address.pincode} | ${address.phone}`;
     const order = placeOrder(items, journalEntry, deliveryAddress, coinDiscount);
-    router.push(`/checkout-success/${order.id}`);
     clearCart();
+    router.push(`/checkout-success/${order.id}`);
   };
 
   const useRandom = () => {
