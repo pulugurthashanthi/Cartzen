@@ -49,9 +49,9 @@ export function FlashSaleBanner() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold text-sm sm:text-base">⚡ Flash Sale</span>
+              <span className="text-white font-bold text-sm sm:text-base">✨ Community Picks</span>
               <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                Today only
+                Trending now
               </span>
             </div>
             <p className="text-white/80 text-xs sm:text-sm">

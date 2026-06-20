@@ -12,6 +12,7 @@ import {
   Check,
   X,
   PlusCircle,
+  Snowflake,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { CartBuddy } from "@/components/ui/CartBuddy";
@@ -297,6 +298,15 @@ export default function CartPage() {
             >
               Place Order & Open Loot Box 🎁
               <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            {/* Cooling-off CTA — mission-aligned resist option */}
+            <Link
+              href="/cooling-off"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-violet-200 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400 font-semibold text-sm hover:border-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all active:scale-95"
+            >
+              <Snowflake className="w-4 h-4" />
+              Not sure? Cool Off First (+35 🪙)
             </Link>
 
             <Link

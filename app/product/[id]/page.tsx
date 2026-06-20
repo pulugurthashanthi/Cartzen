@@ -90,12 +90,6 @@ function getRatingBreakdown(rating: number, total: number) {
   }));
 }
 
-// ─── Stock scarcity (consistent per product) ─────────────────────────────────
-function getStockCount(id: string) {
-  const n = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return (n % 7) + 2; // 2–8
-}
-
 // ─── Pincode delivery ─────────────────────────────────────────────────────────
 function getDeliveryDate() {
   const d = new Date();
@@ -198,7 +192,7 @@ export default function ProductPage() {
   const productReviews = reviews.filter((r) => r.productId === product.id);
   const inCart = items.some((i) => i.productId === product.id);
   const inCooling = isInCoolingOff(product.id);
-  const stockCount = getStockCount(product.id);
+  const stockCount = 99;
   const ratingBreakdown = getRatingBreakdown(product.rating, product.reviewCount);
   const similarProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 6);
   const recentProducts = recentIds.map((id) => products.find((p) => p.id === id)).filter(Boolean).slice(0, 6) as Product[];
@@ -308,13 +302,6 @@ export default function ProductPage() {
             <p className="text-xs text-gray-400">Inclusive of all taxes</p>
           </div>
 
-          {/* Stock warning */}
-          {stockCount <= 5 && (
-            <div className="flex items-center gap-2 text-sm font-medium text-rose-600 dark:text-rose-400">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-              Only {stockCount} left in stock — order soon!
-            </div>
-          )}
 
           {/* CartZen tip */}
           <div className="p-3 rounded-xl bg-zen-50 dark:bg-zen-950/50 border border-zen-100 dark:border-zen-900 text-sm text-zen-700 dark:text-zen-400">

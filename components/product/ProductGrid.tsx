@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -52,6 +52,7 @@ export function ProductGrid() {
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [minDiscount, setMinDiscount] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -136,13 +137,17 @@ export function ProductGrid() {
 
   const activeFilterCount = (priceRange ? 1 : 0) + (minDiscount !== null ? 1 : 0);
 
-  function clearAll() {
+  const clearAll = useCallback(() => {
     setSearch("");
     setActiveCategory("all");
     setPriceRange(null);
     setMinDiscount(null);
     setSortBy("relevance");
-  }
+    setVisibleCount(12);
+  }, []);
+
+  // Reset visible count whenever filters/search/category change
+  useEffect(() => { setVisibleCount(12); }, [search, activeCategory, priceRange, minDiscount, sortBy]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -334,11 +339,23 @@ export function ProductGrid() {
 
       {/* Grid */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filtered.slice(0, visibleCount).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          {visibleCount < filtered.length && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setVisibleCount((n) => n + 12)}
+                className="btn-secondary px-8"
+              >
+                Show more ({filtered.length - visibleCount} left)
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-20">
           <div className="text-5xl mb-4">🔍</div>
