@@ -103,7 +103,7 @@ export default function CheckoutPage() {
     if (!addressTouched && savedAddresses.length > 0) setAddress(savedAddresses[0]);
   }, [savedAddresses, addressTouched]);
 
-  if (items.length === 0) {
+  if (items.length === 0 && !placing) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="text-center">
@@ -123,8 +123,8 @@ export default function CheckoutPage() {
     const journalEntry = addEntry(selectedReason, note || undefined);
     const deliveryAddress = `${address.fullName}, ${address.line1}, ${address.city}, ${address.state} - ${address.pincode} | ${address.phone}`;
     const order = placeOrder(items, journalEntry, deliveryAddress, coinDiscount);
-    clearCart();
     router.push(`/checkout-success/${order.id}`);
+    clearCart();
   };
 
   const useRandom = () => {
