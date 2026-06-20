@@ -197,6 +197,11 @@
 }
 .legendary-rays { animation: legendaryRays 8s linear infinite; }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -142,7 +142,13 @@ export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title 
                 <Gift className="w-20 h-20 text-white drop-shadow-lg" />
               </div>
             </button>
-            <p className="text-white/50 text-xs mt-8 animate-pulse">👆 tap the box</p>
+            {/* Prominent tap prompt — hard to miss */}
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <div className="animate-bounce text-3xl">👇</div>
+              <span className="bg-white text-purple-700 font-extrabold text-sm px-5 py-2 rounded-full shadow-lg tracking-wide animate-pulse">
+                TAP THE BOX TO OPEN
+              </span>
+            </div>
           </div>
         )}
 

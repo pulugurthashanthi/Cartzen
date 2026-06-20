@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Flame, Gift, Check, ChevronRight, Calendar } from "lucide-react";
+import { Flame, Gift, Check, ChevronRight, Calendar, Sparkles } from "lucide-react";
 import { useRewards } from "@/hooks/useRewards";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 import { boxSkinGradient } from "@/lib/engagement";
@@ -38,7 +38,34 @@ export function DailyHub() {
         />
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      {/* Daily box hero — full-width when available, collapses into grid when claimed */}
+      {r.dailyBoxAvailable ? (
+        <div className="mb-2.5">
+          <button
+            onClick={handleDaily}
+            className="w-full rounded-2xl p-4 flex items-center gap-4 bg-gradient-to-r from-fuchsia-500 via-purple-600 to-violet-700 text-white shadow-lg shadow-fuchsia-500/30 active:scale-[0.98] transition-all relative overflow-hidden"
+          >
+            {/* Shimmer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_ease-in-out_infinite]" />
+            <div className="relative w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <Gift className="w-8 h-8 text-white" />
+            </div>
+            <div className="flex-1 text-left min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="font-bold text-lg leading-none text-white">Daily Box Ready!</p>
+                <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+              </div>
+              <p className="text-white/80 text-sm">Tap to open your free reward box 🎁</p>
+            </div>
+            <div className="flex-shrink-0 bg-white/20 rounded-xl px-4 py-2">
+              <p className="text-xs font-bold text-white/70 mb-0.5">TAP TO</p>
+              <p className="text-sm font-extrabold text-white">OPEN</p>
+            </div>
+          </button>
+        </div>
+      ) : null}
+
+      <div className={cn("grid gap-2.5", r.dailyBoxAvailable ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}>
         {/* Streak */}
         <Link
           href="/rewards"
@@ -56,25 +83,19 @@ export function DailyHub() {
           </div>
         </Link>
 
-        {/* Daily box */}
-        <button
-          onClick={handleDaily}
-          disabled={!r.dailyBoxAvailable}
-          className={cn(
-            "rounded-2xl p-3 flex items-center gap-2.5 border transition-all active:scale-95 text-left",
-            r.dailyBoxAvailable
-              ? "bg-gradient-to-br from-fuchsia-500 to-purple-600 border-transparent text-white shadow-md"
-              : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800"
-          )}
-        >
-          <Gift className={cn("w-7 h-7 flex-shrink-0", r.dailyBoxAvailable ? "text-white" : "text-gray-300")} />
-          <div className="min-w-0">
-            <p className={cn("font-bold text-sm leading-tight", r.dailyBoxAvailable ? "text-white" : "text-gray-400")}>
-              {r.dailyBoxAvailable ? "Open!" : "Claimed"}
-            </p>
-            <p className={cn("text-[11px] leading-tight", r.dailyBoxAvailable ? "text-white/80" : "text-gray-400")}>daily box</p>
-          </div>
-        </button>
+        {/* Daily box — compact tile when claimed */}
+        {!r.dailyBoxAvailable && (
+          <button
+            disabled
+            className="rounded-2xl p-3 flex items-center gap-2.5 border bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 text-left"
+          >
+            <Gift className="w-7 h-7 flex-shrink-0 text-gray-300" />
+            <div className="min-w-0">
+              <p className="font-bold text-sm leading-tight text-gray-400">Claimed</p>
+              <p className="text-[11px] leading-tight text-gray-400">daily box</p>
+            </div>
+          </button>
+        )}
 
         {/* Login reward */}
         <button
