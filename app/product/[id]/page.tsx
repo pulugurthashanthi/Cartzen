@@ -596,9 +596,9 @@ export default function ProductPage() {
                 </div>
               ))
             ) : (
-              /* Fallback sample reviews — varied per product using id hash */
+              /* Fallback sample reviews — position-based pool so adjacent products never share reviewers */
               (() => {
-                const h = product.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                const pos = products.findIndex((p) => p.id === product.id);
                 const pools = [
                   [
                     { name: "Divya P.", initial: "D", rating: 5, title: "Exceeded expectations!", body: "Bought this as a gift and the recipient absolutely loved it. Build quality is top-notch and it arrived well-packaged. Will definitely order again.", helpful: 61 },
@@ -612,8 +612,12 @@ export default function ProductPage() {
                     { name: "Sneha R.", initial: "S", rating: 5, title: "Worth every rupee", body: "I researched for weeks before buying and I'm so glad I chose this one. The quality is premium and the finish is beautiful. Highly recommended.", helpful: 112 },
                     { name: "Vikram N.", initial: "V", rating: 4, title: "Very good, small caveats", body: "Really happy with this purchase. The product is well-made and performs as advertised. Only wish the instructions were clearer — took some trial and error.", helpful: 55 },
                   ],
+                  [
+                    { name: "Meghna T.", initial: "M", rating: 5, title: "Genuinely impressive", body: "Did not expect this quality at this price. Everything about it feels premium — the packaging, the finish, the performance. Very satisfied.", helpful: 78 },
+                    { name: "Rohit B.", initial: "R", rating: 4, title: "Happy with this pick", body: "Researched a lot before buying and this was the right choice. Exactly as described, no surprises. Would buy from this brand again.", helpful: 42 },
+                  ],
                 ];
-                return pools[h % pools.length];
+                return pools[Math.abs(pos) % pools.length];
               })().map((r, i) => (
                 <div key={i} className="card p-5">
                   <div className="flex items-start justify-between gap-3 mb-3">
