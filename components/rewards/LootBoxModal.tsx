@@ -236,6 +236,11 @@ export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title 
                         {r.kind === "badge" && badge && (
                           <p className="text-xs text-gray-500">{badge.name} — {badge.description}</p>
                         )}
+                        {r.kind === "coins" && r.amount != null && r.amount >= 10 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-0.5">
+                            = ₹{Math.floor(r.amount / 10)} off at next checkout
+                          </p>
+                        )}
                       </div>
                     </div>
                   );

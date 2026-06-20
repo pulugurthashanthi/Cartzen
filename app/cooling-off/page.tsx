@@ -8,9 +8,14 @@ import {
 } from "lucide-react";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useCart } from "@/contexts/CartContext";
+import { useRewards } from "@/hooks/useRewards";
 import { formatPrice, cn } from "@/lib/utils";
+import { showToast } from "@/components/ui/Toast";
+import { Confetti } from "@/components/ui/Confetti";
 import { formatDistanceToNow, differenceInMinutes } from "date-fns";
 import type { CoolingOffItem } from "@/types";
+
+const RESIST_COIN_REWARD = 25;
 
 const TRIGGER_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
   bored: { label: "Bored", emoji: "😴", color: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" },
@@ -26,28 +31,54 @@ const COOL_OFF_OPTIONS: { days: 1 | 7 | 30; label: string; desc: string }[] = [
   { days: 30, label: "30 Days", desc: "Big purchase" },
 ];
 
-function getDaysRemaining(item: CoolingOffItem): { pct: number; label: string; expired: boolean } {
+// In demo mode, real durations (1d / 7d / 30d) are compressed to 2 / 5 / 10 minutes
+// so testers can verify the full flow without waiting days.
+const DEMO_MODE = true;
+
+const REAL_DURATION_LABEL: Record<number, string> = { 1: "24-hour", 7: "7-day", 30: "30-day" };
+
+function getDaysRemaining(item: CoolingOffItem): { pct: number; label: string; expired: boolean; durationLabel: string } {
+  const days = item.coolOffDays ?? 1;
+  const durationLabel = REAL_DURATION_LABEL[days] ?? `${days}-day`;
   const addedTime = new Date(item.addedAt).getTime();
-  // Demo: 1-day = 1min, 7-day = 2min, 30-day = 3min
-  const demoMs = (item.coolOffDays ?? 1) === 1 ? 60_000 : (item.coolOffDays ?? 1) === 7 ? 120_000 : 180_000;
+  const realMs = days * 24 * 60 * 60 * 1000;
+  const demoMs = days === 1 ? 2 * 60_000 : days === 7 ? 5 * 60_000 : 10 * 60_000;
+  const targetMs = DEMO_MODE ? demoMs : realMs;
   const elapsed = Date.now() - addedTime;
-  const pct = Math.min(100, Math.round((elapsed / demoMs) * 100));
-  const expired = elapsed >= demoMs;
-  const minutesLeft = Math.max(0, Math.ceil((demoMs - elapsed) / 60000));
-  const label = expired ? "Ready for check-in!" : `~${minutesLeft}m left`;
-  return { pct, label, expired };
+  const pct = Math.min(100, Math.round((elapsed / targetMs) * 100));
+  const expired = elapsed >= targetMs;
+  if (expired) return { pct: 100, label: "Ready for check-in!", expired: true, durationLabel };
+  if (DEMO_MODE) {
+    const secsLeft = Math.max(0, Math.ceil((targetMs - elapsed) / 1000));
+    const label = secsLeft > 60 ? `~${Math.ceil(secsLeft / 60)}m left (demo)` : `${secsLeft}s left (demo)`;
+    return { pct, label, expired: false, durationLabel };
+  }
+  const hoursLeft = Math.max(0, Math.ceil((targetMs - elapsed) / 3600000));
+  const label = hoursLeft >= 24 ? `${Math.ceil(hoursLeft / 24)}d left` : `${hoursLeft}h left`;
+  return { pct, label, expired: false, durationLabel };
 }
 
 export default function CoolingOffPage() {
   const { items, removeItem, markChecked, extendCoolOff, dueForCheck, analytics } = useCoolingOff();
   const { addItem } = useCart();
+  const { grantCoins } = useRewards();
   const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const handleResist = (productId: string) => {
+    markChecked(productId, false);
+    grantCoins(RESIST_COIN_REWARD);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3500);
+    showToast(`🛡️ Urge defeated! +${RESIST_COIN_REWARD} Zen Coins earned`, "resist");
+  };
 
   const pending = items.filter((i) => !i.checkedAt);
   const resolved = items.filter((i) => i.checkedAt);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <Confetti active={showConfetti} />
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
@@ -60,6 +91,17 @@ export default function CoolingOffPage() {
           Pause before you purchase. Most urges vanish on their own.
         </p>
       </div>
+
+      {/* Demo mode notice */}
+      {DEMO_MODE && (
+        <div className="mb-5 flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 text-xs text-blue-700 dark:text-blue-400">
+          <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <p>
+            <span className="font-semibold">Demo mode — timers compressed.</span>{" "}
+            Real cool-off periods are 24 hours, 7 days, or 30 days. In demo they run for 2, 5, or 10 minutes so you can test the full flow.
+          </p>
+        </div>
+      )}
 
       {/* Analytics strip */}
       {analytics.resolved > 0 && (
@@ -106,10 +148,10 @@ export default function CoolingOffPage() {
                     <Check className="w-3 h-3" /> Yes
                   </button>
                   <button
-                    onClick={() => markChecked(item.productId, false)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-200 transition-colors"
+                    onClick={() => handleResist(item.productId)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-400 text-xs font-semibold hover:bg-violet-200 transition-colors"
                   >
-                    <X className="w-3 h-3" /> Nah
+                    🛡️ Nah!
                   </button>
                 </div>
               </div>
@@ -141,7 +183,7 @@ export default function CoolingOffPage() {
           </h2>
           <div className="space-y-4">
             {pending.map((item) => {
-              const { pct, label, expired } = getDaysRemaining(item);
+              const { pct, label, expired, durationLabel } = getDaysRemaining(item);
               const trigger = item.trigger ? TRIGGER_LABELS[item.trigger] : null;
               const isExpanding = checkingId === item.productId;
 
@@ -178,7 +220,7 @@ export default function CoolingOffPage() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-gray-400 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {item.coolOffDays ?? 1}-day cool-off
+                        {durationLabel} cool-off{DEMO_MODE ? " (demo)" : ""}
                       </span>
                       <span className={cn("text-xs font-medium", expired ? "text-amber-600" : "text-gray-400")}>
                         {label}
@@ -200,10 +242,10 @@ export default function CoolingOffPage() {
                     {expired ? (
                       <>
                         <button
-                          onClick={() => markChecked(item.productId, false)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 hover:bg-green-200 transition-colors"
+                          onClick={() => handleResist(item.productId)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-400 hover:bg-violet-200 transition-colors"
                         >
-                          <TrendingDown className="w-3 h-3" /> Urge gone ✓
+                          🛡️ Urge gone! +{RESIST_COIN_REWARD}🪙
                         </button>
                         <button
                           onClick={() => markChecked(item.productId, true)}

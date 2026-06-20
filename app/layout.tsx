@@ -8,6 +8,7 @@ import { PWARegister } from "@/components/PWARegister";
 import { SyncProvider } from "@/components/SyncProvider";
 import { EngagementBootstrap } from "@/components/engagement/EngagementBootstrap";
 import { CelebrationManager } from "@/components/celebrations/CelebrationManager";
+import { ChallengeWatcher } from "@/components/engagement/ChallengeWatcher";
 
 export const metadata: Metadata = {
   title: "CartZen — Shop Without Spending",
@@ -43,6 +44,7 @@ export default function RootLayout({
             <SyncProvider />
             <EngagementBootstrap />
             <CelebrationManager />
+            <ChallengeWatcher />
           </CartProvider>
         </AuthProvider>
       </body>

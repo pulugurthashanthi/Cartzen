@@ -185,17 +185,38 @@ export default function RewardsPage() {
           <AnimatedNumber value={zenPoints} className="text-xl font-bold text-gray-900 dark:text-gray-100 block" />
           <p className="text-xs text-gray-400">Zen Coins</p>
         </Link>
-        <div className="card p-4 text-center">
+        <Link href="/checkout" className="card p-4 text-center hover:border-amber-300 transition-colors">
           <div className="text-2xl mb-1">💰</div>
-          <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{savingsCoins}</p>
-          <p className="text-xs text-gray-400">Savings Coins</p>
-        </div>
+          <AnimatedNumber value={savingsCoins} className="text-xl font-bold text-gray-900 dark:text-gray-100 block" />
+          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Savings Coins</p>
+          {savingsCoins >= 10 && (
+            <p className="text-[10px] text-gray-400 mt-0.5">= ₹{Math.floor(savingsCoins / 10)} off at checkout</p>
+          )}
+        </Link>
         <div className="card p-4 text-center">
           <div className="text-2xl mb-1">🏅</div>
           <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{badges.length}/{BADGES.length}</p>
           <p className="text-xs text-gray-400">Badges</p>
         </div>
       </div>
+
+      {/* Savings Coins explanation — only shown when user has coins */}
+      {savingsCoins > 0 && (
+        <div className="mb-6 flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+          <span className="text-2xl flex-shrink-0">💰</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-0.5">
+              You have {savingsCoins} Savings Coins — worth ₹{Math.floor(savingsCoins / 10)} at checkout
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">
+              10 coins = ₹1 bonus savings. Earned from loot boxes. Applied at your next checkout to boost your total savings score.
+            </p>
+            <Link href="/cart" className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline">
+              Use at checkout →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Badge collection */}
       <div className="card p-5 mb-6">

@@ -1,95 +1,112 @@
 "use client";
+import Link from "next/link";
 import { useOrders } from "@/hooks/useOrders";
+import { useRewards } from "@/hooks/useRewards";
 import { formatPrice } from "@/lib/utils";
-import { CartBuddy } from "@/components/ui/CartBuddy";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-
-const stats = [
-  { emoji: "💸", label: "Spent in total", value: "₹0" },
-  { emoji: "🧠", label: "Impulses defeated", value: "10K+" },
-  { emoji: "😌", label: "Guilt-free shoppers", value: "50K+" },
-];
-
-const floatingEmojis = [
-  { emoji: "🛒", top: "12%", left: "6%", delay: "0s", size: "text-3xl" },
-  { emoji: "✨", top: "20%", right: "8%", delay: "1.5s", size: "text-2xl" },
-  { emoji: "🎁", top: "65%", left: "4%", delay: "3s", size: "text-2xl" },
-  { emoji: "💎", top: "70%", right: "6%", delay: "0.8s", size: "text-3xl" },
-  { emoji: "🌟", top: "40%", left: "2%", delay: "2s", size: "text-xl" },
-  { emoji: "🎀", top: "35%", right: "3%", delay: "1s", size: "text-xl" },
-];
+import { Flame, Gift } from "lucide-react";
 
 export function Hero() {
   const { savings } = useOrders();
+  const r = useRewards();
+  const isReturning = savings > 0 || r.engagement.streakCurrent > 0;
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 zen-gradient-soft opacity-80" />
-      <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-orange-300/25 to-fuchsia-300/25 blur-3xl -translate-y-1/3 translate-x-1/4" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-gradient-to-tr from-yellow-300/20 to-pink-300/20 blur-3xl translate-y-1/3 -translate-x-1/4" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-fuchsia-50 dark:from-gray-950 dark:via-gray-950 dark:to-gray-950 border-b border-orange-100 dark:border-gray-800">
+      <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-gradient-to-br from-orange-200/30 to-fuchsia-200/20 blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
 
-      {floatingEmojis.map((f, i) => (
-        <span
-          key={i}
-          className={`absolute ${f.size} select-none pointer-events-none opacity-50 animate-float`}
-          style={{ top: f.top, left: f.left, right: (f as { right?: string }).right, animationDelay: f.delay, animationDuration: `${6 + i}s` }}
-        >
-          {f.emoji}
-        </span>
-      ))}
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="text-center max-w-3xl mx-auto">
-
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md shadow-orange-200/50 border border-orange-100 text-sm font-semibold text-orange-700 mb-6 animate-fade-in">
-            🛒 The internet's most harmless shopping addiction
-          </div>
-
-          {/* Headline */}
-          <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-5 animate-slide-up leading-tight text-gray-900 dark:text-white">
-            Add to cart. Checkout.{" "}
-            <span className="zen-gradient-text">Spend ₹0.</span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6 leading-relaxed animate-slide-up text-balance">
-            CartZen is the only shopping app where <strong>"Buy Now"</strong> secretly means <strong>"Save Now"</strong>.
-            {" "}We tricked you. Lovingly. 😇
-          </p>
-
-          {/* CartBuddy mascot */}
-          <div className="flex justify-center mb-8">
-            <CartBuddy mood="home" size="lg" />
-          </div>
-
-          {/* Savings counter */}
-          {savings > 0 && (
-            <div className="inline-flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 shadow-xl shadow-orange-200/40 border border-orange-100 dark:border-orange-900/30 mb-8 animate-fade-in">
-              <div className="w-12 h-12 rounded-xl zen-gradient flex items-center justify-center shadow-md shadow-orange-300/40 text-2xl">
-                🏦
-              </div>
-              <div className="text-left">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Money you definitely didn't spend</p>
-                <AnimatedNumber value={savings} format={formatPrice} className="font-bold text-2xl zen-gradient-text" />
-              </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        {isReturning ? (
+          /* ── Returning user: personal dashboard strip ── */
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-1">Welcome back</p>
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight">
+                Add to cart.{" "}
+                <span className="zen-gradient-text">Spend ₹0.</span>
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Your savings keep growing while your wallet stays full.
+              </p>
             </div>
-          )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            {stats.map((s) => (
-              <div key={s.label} className="bg-white dark:bg-gray-900 rounded-2xl border border-orange-100 dark:border-gray-800 shadow-md shadow-orange-100/50 p-4 text-center">
-                <div className="text-3xl mb-1">{s.emoji}</div>
-                <p className="font-bold text-xl text-gray-900 dark:text-gray-100">{s.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
-              </div>
-            ))}
+            {/* Personal metrics — only shown when non-zero */}
+            <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+              {savings > 0 && (
+                <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-orange-100 dark:border-gray-800">
+                  <div className="w-9 h-9 rounded-xl zen-gradient flex items-center justify-center text-lg flex-shrink-0">🏦</div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium leading-none mb-0.5">Total Saved</p>
+                    <AnimatedNumber value={savings} format={formatPrice} className="font-bold text-lg zen-gradient-text leading-none" />
+                  </div>
+                </div>
+              )}
+              {r.engagement.streakCurrent > 0 && (
+                <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-orange-100 dark:border-gray-800">
+                  <Flame className="w-9 h-9 text-orange-500 fill-orange-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium leading-none mb-0.5">Streak</p>
+                    <p className="font-bold text-lg text-gray-900 dark:text-gray-100 leading-none">{r.engagement.streakCurrent}d</p>
+                  </div>
+                </div>
+              )}
+              {r.coins > 0 && (
+                <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-orange-100 dark:border-gray-800">
+                  <span className="text-2xl flex-shrink-0">🪙</span>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium leading-none mb-0.5">Zen Coins</p>
+                    <p className="font-bold text-lg text-gray-900 dark:text-gray-100 leading-none">{r.coins}</p>
+                  </div>
+                </div>
+              )}
+              {r.dailyBoxAvailable && (
+                <Link
+                  href="/rewards"
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 shadow-md text-white active:scale-95 transition-transform"
+                >
+                  <Gift className="w-6 h-6 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-white/70 font-medium leading-none mb-0.5">Ready!</p>
+                    <p className="font-bold text-sm leading-none">Daily Box</p>
+                  </div>
+                </Link>
+              )}
+            </div>
           </div>
-
-          <p className="text-xs text-gray-400 mt-5">
-            No credit card · No wallet · No regrets · 100% vibes ✌️
-          </p>
-        </div>
+        ) : (
+          /* ── New user: minimal value prop ── */
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400 text-xs font-semibold mb-3">
+                🛒 The internet&apos;s most harmless shopping addiction
+              </div>
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight mb-2">
+                Add to cart. Checkout.{" "}
+                <span className="zen-gradient-text">Spend ₹0.</span>
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                Satisfy the shopping urge without spending real money. Earn rewards, track savings, and understand your triggers.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link href="/rewards" className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 border border-orange-100 dark:border-gray-800 shadow-sm text-center min-w-[80px]">
+                <span className="text-2xl">🎁</span>
+                <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Daily Box</p>
+                <p className="text-[10px] text-gray-400">Free rewards</p>
+              </Link>
+              <Link href="/dashboard" className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 border border-orange-100 dark:border-gray-800 shadow-sm text-center min-w-[80px]">
+                <span className="text-2xl">🏦</span>
+                <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Save Money</p>
+                <p className="text-[10px] text-gray-400">Track progress</p>
+              </Link>
+              <Link href="/cooling-off" className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl bg-white dark:bg-gray-900 border border-orange-100 dark:border-gray-800 shadow-sm text-center min-w-[80px]">
+                <span className="text-2xl">❄️</span>
+                <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Cool Off</p>
+                <p className="text-[10px] text-gray-400">Beat impulses</p>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

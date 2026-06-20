@@ -68,6 +68,7 @@ export interface Order {
   deliveryAddress: string;
   journalEntry?: JournalEntry;
   unboxed?: boolean;
+  coinBonus?: number;
   realityCheck?: { response: "yes" | "maybe" | "no"; timestamp: string };
 }
 

@@ -3,10 +3,11 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, Plus, Shuffle, Check, Gift, Home } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, MapPin, Plus, Shuffle, Check, Gift, Home, Coins } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
+import { useRewards } from "@/hooks/useRewards";
 import { formatPrice, cn } from "@/lib/utils";
 import type { ShoppingReason } from "@/types";
 
@@ -66,12 +67,18 @@ export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { placeOrder, orders } = useOrders();
   const { addEntry } = useJournal();
+  const { savingsCoins, redeemSavingsCoins } = useRewards();
   const [step, setStep] = useState<Step>("journal");
   const [selectedReason, setSelectedReason] = useState<ShoppingReason | null>(null);
   const [note, setNote] = useState("");
   const [showNewForm, setShowNewForm] = useState(false);
   const [newAddress, setNewAddress] = useState<Address>(EMPTY_ADDRESS);
   const [placing, setPlacing] = useState(false);
+  const [applyCoins, setApplyCoins] = useState(false);
+
+  // 10 coins = ₹1 CartZen discount, applied in multiples of 10, capped at cart total
+  const maxCoinsApplicable = Math.min(savingsCoins, Math.floor(total) * 10);
+  const coinDiscount = applyCoins ? Math.floor(maxCoinsApplicable / 10) : 0;
 
   // Saved addresses from order history
   const savedAddresses = useMemo(() => {
@@ -112,9 +119,10 @@ export default function CheckoutPage() {
     if (!selectedReason || !isAddressValid(address)) return;
     setPlacing(true);
     await new Promise((r) => setTimeout(r, 900));
+    if (applyCoins && maxCoinsApplicable > 0) redeemSavingsCoins(maxCoinsApplicable);
     const journalEntry = addEntry(selectedReason, note || undefined);
     const deliveryAddress = `${address.fullName}, ${address.line1}, ${address.city}, ${address.state} - ${address.pincode} | ${address.phone}`;
-    const order = placeOrder(items, journalEntry, deliveryAddress);
+    const order = placeOrder(items, journalEntry, deliveryAddress, coinDiscount);
     clearCart();
     router.push(`/checkout-success/${order.id}`);
   };
@@ -308,11 +316,37 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            <div className="space-y-1.5 pt-3 border-t border-gray-100 dark:border-gray-800 text-sm">
+            {/* Savings Coins redemption */}
+            {savingsCoins >= 10 && (
+              <div className={cn(
+                "rounded-xl border-2 p-3 flex items-center gap-3 transition-all cursor-pointer mt-3",
+                applyCoins
+                  ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
+                  : "border-gray-200 dark:border-gray-700 hover:border-amber-300"
+              )} onClick={() => setApplyCoins((v) => !v)}>
+                <Coins className={cn("w-5 h-5 flex-shrink-0", applyCoins ? "text-amber-600" : "text-gray-400")} />
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-sm font-semibold", applyCoins ? "text-amber-800 dark:text-amber-300" : "text-gray-700 dark:text-gray-300")}>
+                    Apply {maxCoinsApplicable} Savings Coins
+                  </p>
+                  <p className="text-xs text-gray-400">= +{formatPrice(coinDiscount > 0 ? coinDiscount : Math.floor(maxCoinsApplicable / 10))} bonus savings credit</p>
+                </div>
+                <div className={cn("w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center", applyCoins ? "border-amber-500 bg-amber-500" : "border-gray-300 dark:border-gray-600")}>
+                  {applyCoins && <Check className="w-3 h-3 text-white" />}
+                </div>
+              </div>
+            )}
+            <div className="space-y-1.5 pt-3 border-t border-gray-100 dark:border-gray-800 text-sm mt-3">
               <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatPrice(total)}</span></div>
+              {applyCoins && coinDiscount > 0 && (
+                <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                  <span>🪙 Savings Coins bonus</span>
+                  <span className="font-bold">+{formatPrice(coinDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-green-600 dark:text-green-400"><span>You pay</span><span className="font-bold">₹0</span></div>
               <div className="flex justify-between font-bold text-base pt-1 border-t border-gray-100 dark:border-gray-800">
-                <span>You save</span><span className="zen-gradient-text">{formatPrice(total)}</span>
+                <span>You save</span><span className="zen-gradient-text">{formatPrice(total + coinDiscount)}</span>
               </div>
             </div>
           </div>

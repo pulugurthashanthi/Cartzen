@@ -12,6 +12,7 @@ import { generateTherapistInsight } from "@/lib/therapist";
 import { lootClaimStorage } from "@/lib/storage";
 import { trackChallenge } from "@/lib/track";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 
 const FUNNY_LINES = [
   "Your imaginary package is in imaginary transit. The tracking is very real though.",
@@ -79,8 +80,10 @@ export default function CheckoutSuccessPage() {
         {/* Success banner */}
         <div className="zen-gradient rounded-2xl p-6 mb-5 text-center shadow-xl shadow-orange-300/30">
           <div className="text-5xl mb-3 animate-bounce-gentle">💰</div>
-          <h1 className="font-display text-3xl font-bold text-white mb-1">
-            {order ? formatPrice(order.total) : "Money"} Saved!
+          <h1 className="font-display text-3xl font-bold text-white mb-1 flex items-center justify-center gap-2">
+            {order
+              ? <AnimatedNumber value={order.total} format={formatPrice} className="inline" durationMs={1200} />
+              : "Money"}{" "}Saved!
           </h1>
           <p className="text-white/90 text-sm font-medium mb-1">
             🎯 Purchase Craving Successfully Completed
@@ -132,9 +135,15 @@ export default function CheckoutSuccessPage() {
                 <span>Order Total</span>
                 <span className="font-bold text-gray-900 dark:text-gray-100">{formatPrice(order.total)}</span>
               </div>
+              {order.coinBonus != null && order.coinBonus > 0 && (
+                <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                  <span>🪙 Savings Coins bonus</span>
+                  <span className="font-bold">+{formatPrice(order.coinBonus)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-green-600 dark:text-green-400">
-                <span>Amount Saved</span>
-                <span className="font-bold">{formatPrice(order.total)}</span>
+                <span>Total Saved</span>
+                <span className="font-bold">{formatPrice(order.total + (order.coinBonus ?? 0))}</span>
               </div>
             </div>
           </div>
@@ -147,7 +156,7 @@ export default function CheckoutSuccessPage() {
             <span className="text-sm font-semibold text-zen-700 dark:text-zen-400">Lifetime Savings</span>
             <Sparkles className="w-3.5 h-3.5 text-zen-400 ml-auto" />
           </div>
-          <p className="text-3xl font-bold zen-gradient-text mb-3">{formatPrice(savings)}</p>
+          <AnimatedNumber value={savings} format={formatPrice} className="text-3xl font-bold zen-gradient-text mb-3 block" durationMs={1400} />
           {nextMilestone ? (
             <>
               <div className="flex justify-between text-xs text-gray-500 mb-1.5">

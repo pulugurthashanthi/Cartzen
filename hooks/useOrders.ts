@@ -30,7 +30,7 @@ export function useOrders() {
   }, []);
 
   const placeOrder = useCallback(
-    (items: CartItem[], journalEntry?: JournalEntry, deliveryAddress?: string): Order => {
+    (items: CartItem[], journalEntry?: JournalEntry, deliveryAddress?: string, coinBonus = 0): Order => {
       const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
       const now = new Date().toISOString();
       const order: Order = {
@@ -42,12 +42,13 @@ export function useOrders() {
         statusHistory: [{ status: "placed", timestamp: now }],
         deliveryAddress: deliveryAddress ?? "123 Zen Street, Calm Nagar, Bangalore 560001",
         journalEntry,
+        ...(coinBonus > 0 ? { coinBonus } : {}),
       };
 
       ordersStorage.add(order);
-      savingsStorage.add(total);
+      savingsStorage.add(total + coinBonus);
       setOrders((prev) => [order, ...prev]);
-      setSavings((prev) => prev + total);
+      setSavings((prev) => prev + total + coinBonus);
       if (typeof window !== "undefined") window.dispatchEvent(new Event("cartzen:savings-changed"));
       // No setTimeout needed — status is derived from placedAt on every read,
       // so the order progresses even if the user closes the app.

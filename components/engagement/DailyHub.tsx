@@ -28,7 +28,7 @@ export function DailyHub() {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-3">
+    <section className="max-w-6xl mx-auto px-4 py-2">
       {activeBox && (
         <LootBoxModal
           drop={activeBox.drop}
