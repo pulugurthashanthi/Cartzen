@@ -73,20 +73,27 @@ function getVariants(product: Product): VariantGroup[] {
 
 // ─── Rating breakdown ─────────────────────────────────────────────────────────
 function getRatingBreakdown(rating: number, total: number) {
-  // Distribute reviews across stars realistically based on rating
+  // Skew distribution toward 5★/4★ for high ratings, toward 1★/2★ for low.
+  // r in [1,5]; fractions for [5★, 4★, 3★, 2★, 1★] indexed 0-4.
   const r = Math.min(Math.max(rating, 1), 5);
-  const raw = [
-    Math.round(total * (0.1 + (r - 1) * 0.18)),   // 1★
-    Math.round(total * (0.05 + (r - 1) * 0.04)),   // 2★
-    Math.round(total * (0.08 + (r - 1) * 0.02)),   // 3★
-    Math.round(total * (0.15 + (r - 1) * 0.05)),   // 4★
-    0,
-  ];
-  raw[4] = Math.max(0, total - raw[0] - raw[1] - raw[2] - raw[3]);
+  const t = r - 1; // 0 (worst) → 4 (best)
+  const fracs = [
+    0.04 + t * 0.19,   // 5★: 4% at r=1 → 80% at r=5
+    0.08 + t * 0.05,   // 4★: 8% at r=1 → 28% at r=5
+    0.10,              // 3★: flat 10%
+    0.12 - t * 0.025,  // 2★: 12% at r=1 → 2% at r=5
+    0.66 - t * 0.215,  // 1★: 66% at r=1 → 6% at r=5 (always ≥ 2% for any r)
+  ].map((f) => Math.max(0.01, f)); // never negative
+  // Normalise so fracs sum to exactly 1
+  const sum = fracs.reduce((a, b) => a + b, 0);
+  const counts = fracs.map((f) => Math.round((f / sum) * total));
+  // Absorb rounding error into 5★
+  const remainder = total - counts.reduce((a, b) => a + b, 0);
+  counts[0] = Math.max(0, counts[0] + remainder);
   return [5, 4, 3, 2, 1].map((star, i) => ({
     star,
-    count: raw[4 - i],
-    pct: total > 0 ? Math.round((raw[4 - i] / total) * 100) : 0,
+    count: counts[i],
+    pct: total > 0 ? Math.round((counts[i] / total) * 100) : 0,
   }));
 }
 
@@ -406,15 +413,16 @@ export default function ProductPage() {
             <button
               onClick={() => addToCooling(product)}
               disabled={inCooling}
-              title={inCooling ? "Already in cooling-off list" : "Add to cooling-off list"}
+              aria-label={inCooling ? "Already in cooling-off list" : "Add to cooling-off list"}
               className={cn(
-                "p-3.5 rounded-xl transition-all duration-200 active:scale-95 border-2",
+                "flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl transition-all duration-200 active:scale-95 border-2 text-xs font-semibold whitespace-nowrap",
                 inCooling
                   ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500 border-blue-200 dark:border-blue-800"
                   : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               )}
             >
-              <Snowflake className="w-5 h-5" />
+              <Snowflake className="w-4 h-4 flex-shrink-0" />
+              {inCooling ? "Cooling" : "Cool Off"}
             </button>
           </div>
 
@@ -588,11 +596,25 @@ export default function ProductPage() {
                 </div>
               ))
             ) : (
-              /* Generic review placeholders when no real reviews exist */
-              [
-                { name: "Satisfied Customer", initial: "S", rating: 5, title: "Exactly as described!", body: "Quality is great, delivery was fast. Very happy with this purchase. Would definitely recommend to friends and family.", helpful: 42 },
-                { name: "Regular Buyer", initial: "R", rating: 4, title: "Good value for money", body: "Solid product at this price point. Packaging was neat. Only minor quibble is the colour was slightly different from the photos.", helpful: 28 },
-              ].map((r, i) => (
+              /* Fallback sample reviews — varied per product using id hash */
+              (() => {
+                const h = product.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                const pools = [
+                  [
+                    { name: "Divya P.", initial: "D", rating: 5, title: "Exceeded expectations!", body: "Bought this as a gift and the recipient absolutely loved it. Build quality is top-notch and it arrived well-packaged. Will definitely order again.", helpful: 61 },
+                    { name: "Arjun M.", initial: "A", rating: 4, title: "Great value, minor issue", body: "Overall a solid product at this price point. Works exactly as described. Docking one star because the colour was slightly darker than the photos suggest.", helpful: 34 },
+                  ],
+                  [
+                    { name: "Preethi S.", initial: "P", rating: 5, title: "Absolutely love it!", body: "This has become my daily go-to. The quality is far better than I expected for the price. Fast shipping too — arrived two days early.", helpful: 89 },
+                    { name: "Karan T.", initial: "K", rating: 4, title: "Solid purchase, would recommend", body: "Good product overall. Does exactly what it promises. Setup was straightforward and it integrates well with everything else I own.", helpful: 47 },
+                  ],
+                  [
+                    { name: "Sneha R.", initial: "S", rating: 5, title: "Worth every rupee", body: "I researched for weeks before buying and I'm so glad I chose this one. The quality is premium and the finish is beautiful. Highly recommended.", helpful: 112 },
+                    { name: "Vikram N.", initial: "V", rating: 4, title: "Very good, small caveats", body: "Really happy with this purchase. The product is well-made and performs as advertised. Only wish the instructions were clearer — took some trial and error.", helpful: 55 },
+                  ],
+                ];
+                return pools[h % pools.length];
+              })().map((r, i) => (
                 <div key={i} className="card p-5">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">

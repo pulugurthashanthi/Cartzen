@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { BookOpen, TrendingUp, Heart, Info } from "lucide-react";
 import { useJournal } from "@/hooks/useJournal";
 import { formatDate, cn } from "@/lib/utils";
@@ -56,9 +57,13 @@ export default function JournalPage() {
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
             You're either very zen, or you haven't tried shopping yet.
           </p>
-          <p className="text-gray-400 dark:text-gray-500 text-xs">
-            Every checkout asks WHY you're shopping. Spoiler: it's usually boredom. 😄
+          <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
+            Every checkout asks WHY you&apos;re shopping. Spoiler: it&apos;s usually boredom. 😄
           </p>
+          <Link href="/" className="btn-primary">
+            <BookOpen className="w-4 h-4" />
+            Browse & Log Your First Urge
+          </Link>
         </div>
       ) : (
         <>

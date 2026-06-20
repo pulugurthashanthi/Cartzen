@@ -150,7 +150,7 @@ export function Navbar() {
               )}
             </Link>
 
-            <Link href="/cart" className="relative btn-ghost p-2.5">
+            <Link href="/cart" className="relative btn-ghost p-2.5" aria-label={`Cart, ${itemCount} item${itemCount !== 1 ? "s" : ""}`}>
               <ShoppingCart className="w-4 h-4" />
               {itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full zen-gradient flex items-center justify-center text-[10px] font-bold text-white animate-fade-in">

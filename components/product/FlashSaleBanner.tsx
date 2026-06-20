@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Zap } from "lucide-react";
 
 const DEALS = [
-  { label: "boAt Earbuds", discount: "73% off", emoji: "🎧" },
-  { label: "Kanjivaram Saree", discount: "31% off", emoji: "🥻" },
-  { label: "Noise Smartwatch", discount: "69% off", emoji: "⌚" },
-  { label: "Anarkali Kurti", discount: "36% off", emoji: "👘" },
-  { label: "Philips Air Fryer", discount: "33% off", emoji: "🍟" },
+  { label: "boAt Earbuds", discount: "73% off", emoji: "🎧", href: "/product/p17" },
+  { label: "Kanjivaram Saree", discount: "31% off", emoji: "🥻", href: "/product/s1" },
+  { label: "Noise Smartwatch", discount: "69% off", emoji: "⌚", href: "/product/p18" },
+  { label: "Anarkali Kurti", discount: "36% off", emoji: "👘", href: "/product/k1" },
+  { label: "Philips Air Fryer", discount: "33% off", emoji: "🍟", href: "/product/h5" },
 ];
 
 function getEndOfDay() {
@@ -43,7 +44,7 @@ export function FlashSaleBanner() {
         <div className="absolute -top-6 -left-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
         <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-xl" />
 
-        <div className="relative flex items-center gap-3">
+        <Link href={deal.href} className="relative flex items-center gap-3 hover:opacity-90 transition-opacity">
           <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
             <Zap className="w-5 h-5 text-white fill-white" />
           </div>
@@ -59,7 +60,7 @@ export function FlashSaleBanner() {
               <span className="text-white/60 ml-1 text-xs">(still ₹0 at checkout, obviously)</span>
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Countdown */}
         <div className="relative flex items-center gap-2 flex-shrink-0">
