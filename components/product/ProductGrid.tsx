@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -55,6 +56,11 @@ export function ProductGrid() {
   const [visibleCount, setVisibleCount] = useState(12);
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("sort") === "discount") setSortBy("discount");
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchFirestore() {
@@ -150,10 +156,10 @@ export function ProductGrid() {
   useEffect(() => { setVisibleCount(12); }, [search, activeCategory, priceRange, minDiscount, sortBy]);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8">
 
       {/* Search + filter row */}
-      <div className="flex gap-3 max-w-3xl mx-auto mb-6">
+      <div className="flex gap-3 max-w-3xl mx-auto mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input

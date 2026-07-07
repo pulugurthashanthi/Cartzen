@@ -27,10 +27,14 @@ function formatTime(ms: number) {
 }
 
 export function FlashSaleBanner() {
-  const [ms, setMs] = useState(getEndOfDay());
-  const [deal] = useState(() => DEALS[Math.floor(Math.random() * DEALS.length)]);
+  // Start both at fixed values so server and client markup match on first paint;
+  // real values are set in the effect below, right after mount.
+  const [ms, setMs] = useState(0);
+  const [deal, setDeal] = useState(DEALS[0]);
 
   useEffect(() => {
+    setDeal(DEALS[Math.floor(Math.random() * DEALS.length)]);
+    setMs(getEndOfDay());
     const id = setInterval(() => setMs(getEndOfDay()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -38,39 +42,39 @@ export function FlashSaleBanner() {
   const { h, m, sec } = formatTime(ms);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-      <div className="relative overflow-hidden rounded-2xl zen-gradient p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+      <div className="relative overflow-hidden rounded-xl zen-gradient p-2.5 sm:p-3 flex flex-col sm:flex-row items-center justify-between gap-2">
         {/* Decorative blobs */}
         <div className="absolute -top-6 -left-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
         <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-xl" />
 
-        <Link href={deal.href} className="relative flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Zap className="w-5 h-5 text-white fill-white" />
+        <Link href={deal.href} className="relative flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+            <Zap className="w-4 h-4 text-white fill-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold text-sm sm:text-base">✨ Community Picks</span>
-              <span className="bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              <span className="text-white font-bold text-xs sm:text-sm">✨ Community Picks</span>
+              <span className="bg-white/20 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                 Trending now
               </span>
             </div>
-            <p className="text-white/80 text-xs sm:text-sm">
+            <p className="text-white/80 text-[11px] sm:text-xs">
               {deal.emoji} {deal.label} — <span className="font-bold text-white">{deal.discount}</span>
-              <span className="text-white/60 ml-1 text-xs">(still ₹0 at checkout, obviously)</span>
+              <span className="text-white/60 ml-1 text-[10px] hidden sm:inline">(still ₹0 at checkout, obviously)</span>
             </p>
           </div>
         </Link>
 
         {/* Countdown */}
-        <div className="relative flex items-center gap-2 flex-shrink-0">
-          <span className="text-white/70 text-xs font-medium hidden sm:block">Ends in</span>
+        <div className="relative flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-white/70 text-[10px] font-medium hidden sm:block">Ends in</span>
           {[h, m, sec].map((unit, i) => (
             <div key={i} className="flex items-center gap-1">
-              <div className="bg-white/20 backdrop-blur rounded-lg px-2.5 py-1.5 text-center min-w-[2.5rem]">
-                <span className="text-white font-bold text-lg leading-none tabular-nums">{unit}</span>
+              <div className="bg-white/20 backdrop-blur rounded-md px-2 py-1 text-center min-w-[2rem]">
+                <span className="text-white font-bold text-sm leading-none tabular-nums">{unit}</span>
               </div>
-              {i < 2 && <span className="text-white/60 font-bold text-sm">:</span>}
+              {i < 2 && <span className="text-white/60 font-bold text-xs">:</span>}
             </div>
           ))}
         </div>

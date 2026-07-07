@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Hero } from "@/components/product/Hero";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { FlashSaleBanner } from "@/components/product/FlashSaleBanner";
@@ -16,10 +17,13 @@ export default function HomePage() {
       <DailyHub />
       <FlashSaleBanner />
       <TodaysDeals />
+      {/* Products first — personalization rows follow the grid */}
+      <Suspense fallback={null}>
+        <ProductGrid />
+      </Suspense>
       <DreamStrip />
       <RecommendedRow />
       <RecentlyViewedRow />
-      <ProductGrid />
     </>
   );
 }

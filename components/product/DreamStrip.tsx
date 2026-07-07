@@ -15,8 +15,8 @@ export function DreamStrip() {
   const totalValue = items.reduce((sum, i) => sum + i.product.price, 0);
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-4">
-      <div className="flex items-center justify-between mb-3">
+    <section className="max-w-6xl mx-auto px-4 py-2.5">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-fuchsia-500" />
           <h2 className="font-display text-base font-bold text-gray-900 dark:text-gray-100">
