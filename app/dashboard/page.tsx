@@ -165,7 +165,7 @@ export default function DashboardPage() {
               {equivalents.map((eq) => (
                 <div
                   key={eq.text}
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-zen-50 to-calm-50 dark:from-zen-950/40 dark:to-calm-950/40 border border-orange-100 dark:border-gray-800"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-zen-50 to-calm-50 dark:from-zen-950/40 dark:to-calm-950/40 border border-blue-100 dark:border-gray-800"
                 >
                   <span className="text-3xl flex-shrink-0">{eq.emoji}</span>
                   <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-snug">

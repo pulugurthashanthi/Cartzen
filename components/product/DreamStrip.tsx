@@ -15,10 +15,10 @@ export function DreamStrip() {
   const totalValue = items.reduce((sum, i) => sum + i.product.price, 0);
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-2.5">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-fuchsia-500" />
+          <Sparkles className="w-4 h-4 text-indigo-500" />
           <h2 className="font-display text-base font-bold text-gray-900 dark:text-gray-100">
             Your Dream Vault
           </h2>
@@ -26,7 +26,7 @@ export function DreamStrip() {
         </div>
         <Link
           href="/dream-vault"
-          className="flex items-center gap-0.5 text-xs font-semibold text-fuchsia-600 hover:text-fuchsia-700"
+          className="flex items-center gap-0.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
         >
           View all <ChevronRight className="w-3.5 h-3.5" />
         </Link>
@@ -52,7 +52,7 @@ export function DreamStrip() {
         ))}
         <Link
           href="/collections/dream-style"
-          className="snap-start flex-shrink-0 w-20 h-20 rounded-xl bg-fuchsia-50 dark:bg-fuchsia-950/30 border border-dashed border-fuchsia-200 dark:border-fuchsia-900 flex flex-col items-center justify-center gap-1 text-fuchsia-600 hover:bg-fuchsia-100 transition-colors"
+          className="snap-start flex-shrink-0 w-20 h-20 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-dashed border-indigo-200 dark:border-indigo-900 flex flex-col items-center justify-center gap-1 text-indigo-600 hover:bg-indigo-100 transition-colors"
         >
           <Sparkles className="w-4 h-4" />
           <span className="text-[9px] font-semibold text-center leading-tight px-1">Explore</span>

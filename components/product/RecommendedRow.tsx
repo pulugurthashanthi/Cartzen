@@ -45,9 +45,9 @@ export function RecommendedRow() {
   if (recommended.length < 3) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-2.5">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
       <div className="flex items-center gap-2 mb-2">
-        <Sparkles className="w-3.5 h-3.5 text-fuchsia-500" />
+        <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
         <h2 className="font-display text-sm font-bold text-gray-900 dark:text-gray-100">
           Recommended For You
         </h2>
@@ -69,7 +69,7 @@ export function RecommendedRow() {
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
               {product.badge && (
-                <div className="absolute top-1 left-1 bg-fuchsia-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize">
+                <div className="absolute top-1 left-1 bg-indigo-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize">
                   {product.badge}
                 </div>
               )}

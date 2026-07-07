@@ -63,8 +63,8 @@ export function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
-          ? "bg-white/92 dark:bg-gray-950/92 backdrop-blur-md shadow-md shadow-orange-100/50 dark:shadow-none border-b border-orange-100 dark:border-gray-800"
-          : "bg-white/95 dark:bg-gray-950 border-b border-orange-50 dark:border-transparent"
+          ? "bg-white/92 dark:bg-gray-950/92 backdrop-blur-md shadow-md shadow-blue-100/50 dark:shadow-none border-b border-blue-100 dark:border-gray-800"
+          : "bg-white/95 dark:bg-gray-950 border-b border-blue-50 dark:border-transparent"
       )}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,8 +88,8 @@ export function Navbar() {
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === link.href
-                    ? "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-semibold"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-orange-50/60 dark:hover:bg-gray-800"
+                    ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 font-semibold"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50/60 dark:hover:bg-gray-800"
                 )}
               >
                 {link.label}
@@ -101,8 +101,8 @@ export function Navbar() {
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === "/admin"
-                    ? "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-semibold"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-orange-50/60 dark:hover:bg-gray-800"
+                    ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 font-semibold"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50/60 dark:hover:bg-gray-800"
                 )}
               >
                 <Shield className="w-4 h-4" />
@@ -116,7 +116,7 @@ export function Navbar() {
             {/* Coins + streak pill (reward visibility) */}
             <Link
               href="/rewards"
-              className="hidden sm:flex items-center gap-2 rounded-full border border-orange-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 hover:border-zen-300 transition-colors"
+              className="hidden sm:flex items-center gap-2 rounded-full border border-blue-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 hover:border-zen-300 transition-colors"
               aria-label="Rewards"
               title={`${coins} Zen Coins · 10 coins = ₹1 savings bonus at checkout`}
             >
@@ -124,7 +124,7 @@ export function Navbar() {
                 🪙 {coins}
               </span>
               {streakCurrent > 0 && (
-                <span className="flex items-center gap-0.5 text-xs font-bold text-orange-500">
+                <span className="flex items-center gap-0.5 text-xs font-bold text-blue-500">
                   🔥 {streakCurrent}
                 </span>
               )}

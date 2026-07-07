@@ -221,7 +221,7 @@ export default function CheckoutPage() {
           </button>
 
           {/* Reward teaser */}
-          <div className="rounded-2xl p-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white flex items-center gap-3">
+          <div className="rounded-2xl p-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center gap-3">
             <Gift className="w-6 h-6 flex-shrink-0" />
             <div>
               <p className="font-bold text-sm">A loot box is waiting! 🎁</p>

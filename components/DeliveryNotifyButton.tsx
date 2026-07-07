@@ -43,8 +43,8 @@ export function DeliveryNotifyButton({ productName }: { productName?: string }) 
       onClick={enable}
       className={cn(
         "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full",
-        "bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400",
-        "hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors active:scale-95"
+        "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400",
+        "hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors active:scale-95"
       )}
     >
       <BellRing className="w-3.5 h-3.5" />

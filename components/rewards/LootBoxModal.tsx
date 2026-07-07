@@ -231,7 +231,7 @@ export function LootBoxModal({ onClose, drop: providedDrop, skinGradient, title 
                   return (
                     <div
                       key={i}
-                      className="reward-pop flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-orange-50 to-fuchsia-50 dark:from-orange-950/30 dark:to-fuchsia-950/30"
+                      className="reward-pop flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30"
                       style={{ animationDelay: `${0.15 + i * 0.15}s` }}
                     >
                       <span className="text-3xl flex-shrink-0">{r.emoji}</span>

@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<string, string> = {
   placed: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400",
   packed: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
   shipped: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400",
-  out_for_delivery: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400",
+  out_for_delivery: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400",
   delivered: "bg-zen-100 text-zen-700 dark:bg-zen-900/50 dark:text-zen-400",
 };
 

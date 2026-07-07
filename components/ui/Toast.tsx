@@ -37,7 +37,7 @@ export function ToastContainer() {
             "flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up pointer-events-auto",
             t.type === "cooling" && "bg-blue-600 text-white",
             t.type === "success" && "bg-gradient-to-r from-green-500 to-emerald-600 text-white",
-            t.type === "resist" && "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white",
+            t.type === "resist" && "bg-gradient-to-r from-violet-600 to-indigo-600 text-white",
             (t.type === "info" || !t.type) && "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
           )}
         >

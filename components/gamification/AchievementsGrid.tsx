@@ -30,7 +30,7 @@ export function AchievementsGrid({ data }: Props) {
               className={cn(
                 "rounded-2xl p-3 border-2 transition-all",
                 isUnlocked
-                  ? "border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20"
+                  ? "border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20"
                   : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 opacity-50"
               )}
             >
@@ -51,7 +51,7 @@ export function AchievementsGrid({ data }: Props) {
               </p>
               {isUnlocked && (
                 <div className="mt-1.5">
-                  <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">
+                  <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                     ✓ Unlocked
                   </span>
                 </div>

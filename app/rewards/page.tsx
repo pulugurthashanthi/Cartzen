@@ -60,7 +60,7 @@ export default function RewardsPage() {
       <div className={cn(
         "rounded-2xl p-5 mb-5 flex items-center gap-4",
         engagement.streakCurrent > 0
-          ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white"
+          ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
           : "card"
       )}>
         <Flame className={cn("w-12 h-12 flex-shrink-0", engagement.streakCurrent > 0 ? "text-white fill-white/40" : "text-gray-300")} />
@@ -83,9 +83,9 @@ export default function RewardsPage() {
           onClick={openDaily}
           disabled={!r.dailyBoxAvailable}
           className={cn("rounded-2xl p-4 text-center border-2 transition-all active:scale-95",
-            r.dailyBoxAvailable ? "border-fuchsia-300 bg-fuchsia-50 dark:bg-fuchsia-950/30" : "border-gray-100 dark:border-gray-800 opacity-60")}
+            r.dailyBoxAvailable ? "border-indigo-300 bg-indigo-50 dark:bg-indigo-950/30" : "border-gray-100 dark:border-gray-800 opacity-60")}
         >
-          <Gift className={cn("w-6 h-6 mx-auto mb-1", r.dailyBoxAvailable ? "text-fuchsia-500" : "text-gray-300")} />
+          <Gift className={cn("w-6 h-6 mx-auto mb-1", r.dailyBoxAvailable ? "text-indigo-500" : "text-gray-300")} />
           <p className="text-xs font-bold text-gray-900 dark:text-gray-100">Daily Box</p>
           <p className="text-[10px] text-gray-400">{r.dailyBoxAvailable ? "Ready!" : "Tomorrow"}</p>
         </button>
@@ -221,7 +221,7 @@ export default function RewardsPage() {
       {/* Badge collection */}
       <div className="card p-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-fuchsia-500" />
+          <Sparkles className="w-4 h-4 text-indigo-500" />
           <h2 className="font-semibold">Badge Collection</h2>
           <span className="ml-auto text-xs text-gray-400">{badges.length}/{BADGES.length} collected</span>
         </div>

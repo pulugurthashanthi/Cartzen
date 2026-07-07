@@ -284,7 +284,7 @@ export default function CartPage() {
             </div>
 
             {/* Reward teaser — makes the payoff visible before checkout */}
-            <div className="p-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white flex items-center gap-2.5">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center gap-2.5">
               <span className="text-2xl">🎁</span>
               <div>
                 <p className="text-sm font-bold leading-tight">Checkout = 1 guaranteed loot box</p>

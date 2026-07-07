@@ -37,16 +37,16 @@ const VAULTS: { id: DreamVaultCategory; label: string; emoji: string; descriptio
     label: "Dream Garage",
     emoji: "🚗",
     description: "Wheels, gadgets & man-cave picks",
-    color: "text-orange-600 dark:text-orange-400",
-    bg: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900",
   },
   {
     id: "dream_style",
     label: "Dream Style",
     emoji: "👗",
     description: "Fashion you aspire to wear",
-    color: "text-fuchsia-600 dark:text-fuchsia-400",
-    bg: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900",
+    color: "text-indigo-600 dark:text-indigo-400",
+    bg: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900",
   },
 ];
 
@@ -67,7 +67,7 @@ export default function DreamVaultPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-2xl zen-gradient flex items-center justify-center shadow-lg shadow-orange-300/30 text-2xl">
+          <div className="w-12 h-12 rounded-2xl zen-gradient flex items-center justify-center shadow-lg shadow-blue-300/30 text-2xl">
             ✨
           </div>
           <div>
@@ -77,8 +77,8 @@ export default function DreamVaultPage() {
         </div>
 
         {items.length > 0 && (
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900 text-sm">
-            <Sparkles className="w-4 h-4 text-orange-500" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 text-sm">
+            <Sparkles className="w-4 h-4 text-blue-500" />
             <span className="text-gray-600 dark:text-gray-400">Total fantasy value:</span>
             <span className="font-bold zen-gradient-text">{formatPrice(totalFantasyValue)}</span>
           </div>
@@ -92,7 +92,7 @@ export default function DreamVaultPage() {
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0",
             activeVault === "all"
-              ? "zen-gradient text-white shadow-md shadow-orange-300/30"
+              ? "zen-gradient text-white shadow-md shadow-blue-300/30"
               : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
           )}
         >
@@ -113,7 +113,7 @@ export default function DreamVaultPage() {
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0",
                 activeVault === v.id
-                  ? "zen-gradient text-white shadow-md shadow-orange-300/30"
+                  ? "zen-gradient text-white shadow-md shadow-blue-300/30"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               )}
             >
@@ -180,7 +180,7 @@ export default function DreamVaultPage() {
                 <div className="p-3">
                   <p className="text-xs text-gray-400 truncate">{item.product.brand}</p>
                   <Link href={`/product/${item.productId}`}>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors mb-1">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mb-1">
                       {item.product.name}
                     </p>
                   </Link>
@@ -188,7 +188,7 @@ export default function DreamVaultPage() {
                   <div className="flex gap-1 mt-2">
                     <Link
                       href={`/product/${item.productId}`}
-                      className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 hover:bg-orange-100 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 transition-colors"
                     >
                       <ExternalLink className="w-3 h-3" />
                       View

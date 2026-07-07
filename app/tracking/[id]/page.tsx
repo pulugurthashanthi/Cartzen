@@ -147,7 +147,7 @@ export default function TrackingPage() {
           </div>
         </div>
         {mainItem && (
-          <div className="flex items-center gap-3 pt-3 border-t border-orange-50 dark:border-gray-800">
+          <div className="flex items-center gap-3 pt-3 border-t border-blue-50 dark:border-gray-800">
             <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0">
               <Image src={mainItem.product.image} alt={mainItem.product.name} fill className="object-cover" />
             </div>
@@ -160,7 +160,7 @@ export default function TrackingPage() {
           </div>
         )}
         {!isDelivered && (
-          <div className="pt-3 mt-3 border-t border-orange-50 dark:border-gray-800">
+          <div className="pt-3 mt-3 border-t border-blue-50 dark:border-gray-800">
             <DeliveryNotifyButton productName={mainItem?.product.name} />
           </div>
         )}
@@ -169,11 +169,11 @@ export default function TrackingPage() {
       {/* Timeline */}
       <div className="card p-6 mb-5">
         <h2 className="font-semibold mb-6 flex items-center gap-2">
-          <Package className="w-4 h-4 text-orange-500" />
+          <Package className="w-4 h-4 text-blue-500" />
           Delivery Journey
           {!isDelivered && (
-            <span className="ml-auto flex items-center gap-1.5 text-xs text-orange-500 font-medium">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-blue-500 font-medium">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               {nextCountdown ? <>Next update in <span className="font-mono font-bold tabular-nums">{nextCountdown}</span></> : "Live"}
             </span>
           )}
@@ -189,9 +189,9 @@ export default function TrackingPage() {
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg transition-all duration-700",
                     step.completed
-                      ? "zen-gradient shadow-md shadow-orange-300/30"
+                      ? "zen-gradient shadow-md shadow-blue-300/30"
                       : step.current
-                      ? "zen-gradient shadow-lg shadow-orange-400/40 scale-110"
+                      ? "zen-gradient shadow-lg shadow-blue-400/40 scale-110"
                       : "bg-gray-100 dark:bg-gray-800"
                   )}>
                     {step.completed ? (
@@ -205,7 +205,7 @@ export default function TrackingPage() {
                   {!isLast && (
                     <div className={cn(
                       "w-0.5 flex-1 my-1 min-h-[2.5rem] transition-all duration-700",
-                      step.completed ? "bg-gradient-to-b from-orange-400 to-orange-200" : "bg-gray-200 dark:bg-gray-800"
+                      step.completed ? "bg-gradient-to-b from-blue-400 to-blue-200" : "bg-gray-200 dark:bg-gray-800"
                     )} />
                   )}
                 </div>
@@ -217,7 +217,7 @@ export default function TrackingPage() {
                       <p className={cn(
                         "font-semibold text-sm transition-colors",
                         step.current
-                          ? "text-orange-600 dark:text-orange-400"
+                          ? "text-blue-600 dark:text-blue-400"
                           : step.completed
                           ? "text-gray-900 dark:text-gray-100"
                           : "text-gray-400 dark:text-gray-600"
@@ -248,8 +248,8 @@ export default function TrackingPage() {
       {/* Delivery address */}
       <div className="card p-4 mb-5">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
-            <MapPin className="w-4 h-4 text-orange-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-4 h-4 text-blue-500" />
           </div>
           <div>
             <p className="text-xs text-gray-400 mb-0.5">Simulated Delivery Address</p>
@@ -263,7 +263,7 @@ export default function TrackingPage() {
         <>
           {/* Unboxing */}
           {!alreadyUnboxed ? (
-            <div className="card p-6 mb-5 text-center border-2 border-dashed border-orange-200 dark:border-orange-900">
+            <div className="card p-6 mb-5 text-center border-2 border-dashed border-blue-200 dark:border-blue-900">
               <div className={cn(
                 "text-7xl mb-3 transition-all duration-700",
                 unboxing ? "animate-bounce" : ""
@@ -293,7 +293,7 @@ export default function TrackingPage() {
                 <p className="text-sm text-gray-500">Look at it. Sit with it. Then ask yourself: still need it?</p>
               </div>
               {mainItem && (
-                <div className="relative w-48 h-48 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-orange-200/50 dark:shadow-orange-900/30 mb-5">
+                <div className="relative w-48 h-48 mx-auto rounded-2xl overflow-hidden shadow-xl shadow-blue-200/50 dark:shadow-blue-900/30 mb-5">
                   <Image
                     src={mainItem.product.image}
                     alt={mainItem.product.name}
@@ -339,7 +339,7 @@ export default function TrackingPage() {
                       <button
                         key={opt.value}
                         onClick={() => handleRealityCheck(opt.value)}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all active:scale-95"
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all active:scale-95"
                       >
                         <span className="text-2xl">{opt.emoji}</span>
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">

@@ -78,7 +78,7 @@ export default function CheckoutSuccessPage() {
       <div className={`max-w-lg mx-auto transition-all duration-700 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
 
         {/* Success banner */}
-        <div className="zen-gradient rounded-2xl p-6 mb-5 text-center shadow-xl shadow-orange-300/30">
+        <div className="zen-gradient rounded-2xl p-6 mb-5 text-center shadow-xl shadow-blue-300/30">
           <div className="text-5xl mb-3 animate-bounce-gentle">💰</div>
           <h1 className="font-display text-3xl font-bold text-white mb-1 flex items-center justify-center gap-2">
             {order

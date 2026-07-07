@@ -46,7 +46,7 @@ export function CelebrationManager() {
         emoji: "⚡",
         title: `Level ${level}!`,
         sub: "You leveled up. New rewards await.",
-        gradient: "from-amber-400 to-orange-500",
+        gradient: "from-amber-400 to-amber-600",
       });
       setNum(SEEN_LEVEL, level);
     }

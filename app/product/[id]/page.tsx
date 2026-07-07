@@ -463,24 +463,24 @@ export default function ProductPage() {
           {/* Dream Vault */}
           <div className="relative">
             {isInVault(product.id) ? (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-fuchsia-50 dark:bg-fuchsia-950/20 border border-fuchsia-100 dark:border-fuchsia-900">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900">
                 <span className="text-lg">{VAULT_OPTIONS.find(v => v.id === getVaultCategory(product.id))?.emoji ?? "✨"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-fuchsia-700 dark:text-fuchsia-400">
+                  <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">
                     Saved to {VAULT_OPTIONS.find(v => v.id === getVaultCategory(product.id))?.label}
                   </p>
-                  <button onClick={() => removeFromVault(product.id)} className="text-xs text-fuchsia-500 hover:text-fuchsia-700 transition-colors">
+                  <button onClick={() => removeFromVault(product.id)} className="text-xs text-indigo-500 hover:text-indigo-700 transition-colors">
                     Remove from vault
                   </button>
                 </div>
-                <Link href="/dream-vault" className="text-xs font-medium text-fuchsia-600 dark:text-fuchsia-400 hover:underline flex-shrink-0">
+                <Link href="/dream-vault" className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex-shrink-0">
                   View vault →
                 </Link>
               </div>
             ) : (
               <button
                 onClick={() => setShowVaultPicker((v) => !v)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-fuchsia-200 dark:border-fuchsia-900 text-fuchsia-600 dark:text-fuchsia-400 text-sm font-medium hover:bg-fuchsia-50 dark:hover:bg-fuchsia-950/20 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors"
               >
                 ✨ Save to Dream Vault
               </button>
@@ -491,7 +491,7 @@ export default function ProductPage() {
                   <button
                     key={v.id}
                     onClick={() => { addToVault(product, v.id); setShowVaultPicker(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors text-left"
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors text-left"
                   >
                     <span className="text-xl">{v.emoji}</span>
                     {v.label}

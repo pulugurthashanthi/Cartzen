@@ -56,14 +56,14 @@ export function CartBuddy({ mood = "home", className, size = "md" }: CartBuddyPr
   return (
     <div className={cn("flex items-end gap-3", className)}>
       <div className={cn(
-        "rounded-2xl zen-gradient flex items-center justify-center shadow-lg shadow-orange-300/30 flex-shrink-0 animate-bounce-gentle",
+        "rounded-2xl zen-gradient flex items-center justify-center shadow-lg shadow-blue-300/30 flex-shrink-0 animate-bounce-gentle",
         s.cart
       )}>
         🛒
       </div>
-      <div className="relative bg-white dark:bg-gray-900 border border-orange-100 dark:border-gray-800 rounded-2xl rounded-bl-sm shadow-md max-w-xs">
+      <div className="relative bg-white dark:bg-gray-900 border border-blue-100 dark:border-gray-800 rounded-2xl rounded-bl-sm shadow-md max-w-xs">
         <p className={cn("font-medium text-gray-700 dark:text-gray-300 leading-snug", s.bubble)}>{msg}</p>
-        <div className="absolute -bottom-2 left-4 w-3 h-3 bg-white dark:bg-gray-900 border-b border-l border-orange-100 dark:border-gray-800 rotate-[-45deg]" />
+        <div className="absolute -bottom-2 left-4 w-3 h-3 bg-white dark:bg-gray-900 border-b border-l border-blue-100 dark:border-gray-800 rotate-[-45deg]" />
       </div>
     </div>
   );
