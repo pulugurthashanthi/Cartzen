@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronDown, ChevronRight, Check } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { products as staticProducts, categories as staticCategories } from "@/data/products";
@@ -53,6 +53,7 @@ export function ProductGrid() {
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [minDiscount, setMinDiscount] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -186,8 +187,8 @@ export function ProductGrid() {
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all whitespace-nowrap",
               showFilters || activeFilterCount > 0
-                ? "border-orange-400 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400"
-                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-orange-300"
+                ? "border-blue-400 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-blue-300"
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -218,7 +219,7 @@ export function ProductGrid() {
                           "w-full text-left px-3 py-2 rounded-xl text-sm transition-all",
                           active
                             ? "zen-gradient text-white font-medium"
-                            : "hover:bg-orange-50 dark:hover:bg-orange-950/20 text-gray-700 dark:text-gray-300"
+                            : "hover:bg-blue-50 dark:hover:bg-blue-950/20 text-gray-700 dark:text-gray-300"
                         )}
                       >
                         {r.label}
@@ -244,7 +245,7 @@ export function ProductGrid() {
                           "px-3 py-2 rounded-xl text-sm font-medium transition-all",
                           active
                             ? "zen-gradient text-white"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
                         )}
                       >
                         {d.label}
@@ -267,27 +268,52 @@ export function ProductGrid() {
         </div>
       </div>
 
-      {/* Category pills */}
-      <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-5">
+      {/* Discover header */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+            ✨ Discover without spending
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">Explore. Feel good. Stay mindful.</p>
+        </div>
+        <button
+          onClick={() => setShowAllCategories((v) => !v)}
+          className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex-shrink-0"
+        >
+          {showAllCategories ? "Show less" : "View all"}
+        </button>
+      </div>
+
+      {/* Category boxes */}
+      <div
+        className={cn(
+          "gap-2.5 mb-5",
+          showAllCategories ? "flex flex-wrap" : "flex overflow-x-auto pb-3 scrollbar-hide"
+        )}
+      >
         {categories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0",
               activeCategory === cat.id
-                ? "zen-gradient text-white shadow-md shadow-zen-500/20"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+                : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-blue-300"
             )}
           >
-            <span>{cat.icon}</span>
+            {cat.id === "all" && activeCategory === "all" ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <span>{cat.icon}</span>
+            )}
             {cat.name}
             {cat.count > 0 && (
               <span className={cn(
                 "text-xs font-semibold px-1.5 py-0.5 rounded-full",
                 activeCategory === cat.id
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
               )}>
                 {cat.count}
               </span>
@@ -300,19 +326,19 @@ export function ProductGrid() {
       {(priceRange || minDiscount !== null || search) && (
         <div className="flex flex-wrap gap-2 mb-5">
           {search && (
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-xs font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               🔍 &ldquo;{search}&rdquo;
               <button onClick={() => setSearch("")}><X className="w-3 h-3" /></button>
             </span>
           )}
           {priceRange && (
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-xs font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               💰 {PRICE_RANGES.find(r => r.min === priceRange.min)?.label}
               <button onClick={() => setPriceRange(null)}><X className="w-3 h-3" /></button>
             </span>
           )}
           {minDiscount !== null && (
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-xs font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               🏷️ {minDiscount}%+ off
               <button onClick={() => setMinDiscount(null)}><X className="w-3 h-3" /></button>
             </span>
@@ -325,11 +351,12 @@ export function ProductGrid() {
 
       {/* Results + sort */}
       <div className="flex items-center justify-between mb-5">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          <span className="font-semibold text-gray-900 dark:text-gray-100">{filtered.length}</span>{" "}
-          product{filtered.length !== 1 ? "s" : ""}
-          {search && <span className="text-gray-400"> · &ldquo;{search}&rdquo;</span>}
-        </p>
+        <div>
+          <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100">
+            {search ? `Results for "${search}"` : activeCategory === "all" ? "Featured for you" : categories.find((c) => c.id === activeCategory)?.name}
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">{filtered.length} product{filtered.length !== 1 ? "s" : ""}</p>
+        </div>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
