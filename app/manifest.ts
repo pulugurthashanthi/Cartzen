@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FakeBasket — Shop Without Spending",
-    short_name: "FakeBasket",
+    name: "Fake Basket — Shop Without Spending",
+    short_name: "Fake Basket",
     description:
       "Satisfy your shopping urge mindfully. Fill a cart, feel the dopamine, spend ₹0.",
     start_url: "/",

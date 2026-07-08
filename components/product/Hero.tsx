@@ -4,12 +4,11 @@ import { useOrders } from "@/hooks/useOrders";
 import { useRewards } from "@/hooks/useRewards";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice, cn } from "@/lib/utils";
-import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { GiftBoxIllustration } from "@/components/ui/GiftBoxIllustration";
+import { BasketIllustration } from "@/components/ui/BasketIllustration";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 import { boxSkinGradient } from "@/lib/engagement";
 import { sound } from "@/lib/sound";
-import { Gift, Flame, TrendingUp } from "lucide-react";
+import { ShoppingBasket, Flame, Star, Coins } from "lucide-react";
 import type { RewardDrop } from "@/types";
 
 function timeGreeting() {
@@ -53,13 +52,15 @@ export function Hero() {
             <p className="text-blue-600 dark:text-blue-400 font-semibold text-sm mb-1">
               {timeGreeting()}, {firstName} 👋
             </p>
-            <h1 className="font-display text-2xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-2">
-              Spend ₹0 today,
+            <h1 className="font-display text-2xl md:text-4xl font-bold leading-tight mb-2">
+              <span className="text-blue-600 dark:text-blue-400">Fake Basket</span>
               <br />
-              Save more tomorrow.
+              <span className="text-gray-900 dark:text-white">Feel the shopping</span>
+              <br />
+              <span className="text-gray-900 dark:text-white">Pay nothing</span>
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-sm">
-              Every choice you make today builds the life you dream of.
+              Shop, collect joy and save mindfully.
             </p>
             <button
               onClick={handleDaily}
@@ -71,42 +72,37 @@ export function Hero() {
                   : "bg-gray-300 dark:bg-gray-700 cursor-not-allowed"
               )}
             >
-              <Gift className="w-4 h-4" />
+              <ShoppingBasket className="w-4 h-4" />
               {r.dailyBoxAvailable ? "Open Daily Box" : "Daily Box Claimed"}
             </button>
           </div>
 
-          {/* Stats + illustration */}
-          <div className="flex items-center gap-5 sm:gap-8">
+          {/* Illustration + stats */}
+          <div className="flex flex-col items-center gap-4">
+            <BasketIllustration className="w-28 h-28 md:w-36 md:h-36" />
             <div className="flex items-center gap-5 sm:gap-8">
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Saved</p>
-                <AnimatedNumber
-                  value={savings}
-                  format={formatPrice}
-                  className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400 block"
-                />
-                {savings > 0 && (
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1 flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> Growing daily
-                  </p>
-                )}
-              </div>
-              <div className="h-10 w-px bg-blue-200 dark:bg-gray-700 flex-shrink-0" />
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-                  <Flame className="w-3 h-3 text-orange-500" /> Streak
+              <div className="text-center">
+                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
+                  <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  {formatPrice(savings)}
                 </p>
-                <p className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">Coins Balance</p>
+              </div>
+              <div className="text-center">
+                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
+                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
                   {r.engagement.streakCurrent} Day{r.engagement.streakCurrent === 1 ? "" : "s"}
                 </p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">Streak</p>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Zen Coins</p>
-                <p className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100">{r.coins}</p>
+              <div className="text-center">
+                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
+                  <Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
+                  {r.xp}
+                </p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">XP Points</p>
               </div>
             </div>
-            <GiftBoxIllustration className="hidden sm:block w-20 h-20 md:w-28 md:h-28 flex-shrink-0" />
           </div>
         </div>
       </div>

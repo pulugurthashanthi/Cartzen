@@ -73,7 +73,7 @@ export default function RewardsPage() {
           </p>
         </div>
         <p className={cn("text-xs text-right max-w-[40%]", engagement.streakCurrent > 0 ? "text-white/70" : "text-gray-400")}>
-          Open FakeBasket daily to keep the flame alive 🔥
+          Open Fake Basket daily to keep the flame alive 🔥
         </p>
       </div>
 

@@ -11,15 +11,15 @@ import { CelebrationManager } from "@/components/celebrations/CelebrationManager
 import { ChallengeWatcher } from "@/components/engagement/ChallengeWatcher";
 
 export const metadata: Metadata = {
-  title: "FakeBasket — Shop Without Spending",
+  title: "Fake Basket — Shop Without Spending",
   description:
-    "Satisfy your shopping urge mindfully. FakeBasket helps you overcome impulse spending through simulated shopping experiences.",
+    "Satisfy your shopping urge mindfully. Fake Basket helps you overcome impulse spending through simulated shopping experiences.",
   keywords: ["mindful shopping", "impulse spending", "financial wellness"],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "FakeBasket",
+    title: "Fake Basket",
   },
 };
 

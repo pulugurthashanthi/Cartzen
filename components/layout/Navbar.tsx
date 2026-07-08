@@ -11,7 +11,7 @@ import {
   BookOpen,
   Snowflake,
   Package,
-  Leaf,
+  ShoppingBasket,
   Menu,
   X,
   Shield,
@@ -21,6 +21,7 @@ import {
   Heart,
   Gift,
   ShoppingBag,
+  User,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/contexts/CartContext";
@@ -30,16 +31,24 @@ import { useFirestoreSync } from "@/hooks/useFirestoreSync";
 import { useRewards } from "@/hooks/useRewards";
 import { cn } from "@/lib/utils";
 
+// Full set — used for the mobile menu, since the coin badge (the desktop
+// shortcut to Rewards) and Quick Actions widget aren't visible there.
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Savings", icon: BarChart2 },
   { href: "/rewards", label: "Rewards", icon: Gift },
-  { href: "/store", label: "Store", icon: ShoppingBag },
+  { href: "/store", label: "Browse", icon: ShoppingBag },
   { href: "/orders", label: "Orders", icon: Package },
   { href: "/dream-vault", label: "Dream Vault", icon: Sparkles },
   { href: "/cooling-off", label: "Cooling-Off", icon: Snowflake },
   { href: "/journal", label: "Journal", icon: BookOpen },
 ];
+
+// Desktop nav is trimmed — Rewards stays reachable via the coin badge,
+// Cooling-Off via Quick Actions on Home and the per-product cooling-off action.
+const desktopNavLinks = navLinks.filter(
+  (l) => l.href !== "/rewards" && l.href !== "/cooling-off"
+);
 
 export function Navbar() {
   const pathname = usePathname();
@@ -48,7 +57,7 @@ export function Navbar() {
   const { items: wishlistItems } = useWishlist();
   const { user, isAdmin, signIn, signOut, loading } = useAuth();
   const { synced, syncing } = useFirestoreSync();
-  const { coins, engagement: { streakCurrent } } = useRewards();
+  const { coins } = useRewards();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -72,16 +81,16 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-xl zen-gradient flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-              <Leaf className="w-4 h-4 text-white" />
+              <ShoppingBasket className="w-4 h-4 text-white" />
             </div>
             <span className="font-display font-bold text-xl tracking-tight zen-gradient-text">
-              FakeBasket
+              Fake Basket
             </span>
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {desktopNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -113,7 +122,7 @@ export function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Coins + streak pill (reward visibility) */}
+            {/* Coins pill (reward visibility + shortcut to Rewards) */}
             <Link
               href="/rewards"
               className="hidden sm:flex items-center gap-2 rounded-full border border-blue-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 hover:border-zen-300 transition-colors"
@@ -123,11 +132,6 @@ export function Navbar() {
               <span className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                 🪙 {coins}
               </span>
-              {streakCurrent > 0 && (
-                <span className="flex items-center gap-0.5 text-xs font-bold text-blue-500">
-                  🔥 {streakCurrent}
-                </span>
-              )}
             </Link>
 
             <button
@@ -171,7 +175,7 @@ export function Navbar() {
                       syncing ? "bg-amber-400 animate-pulse" : synced ? "bg-green-400" : "bg-gray-300"
                     )}
                   />
-                  {user.photoURL && (
+                  {user.photoURL ? (
                     <Image
                       src={user.photoURL}
                       alt={user.displayName ?? "User"}
@@ -179,6 +183,13 @@ export function Navbar() {
                       height={28}
                       className="rounded-full border border-gray-200 dark:border-gray-700"
                     />
+                  ) : (
+                    <div
+                      className="w-7 h-7 rounded-full zen-gradient flex items-center justify-center flex-shrink-0"
+                      title={user.displayName ?? "User"}
+                    >
+                      <User className="w-3.5 h-3.5 text-white" />
+                    </div>
                   )}
                   <button
                     onClick={signOut}

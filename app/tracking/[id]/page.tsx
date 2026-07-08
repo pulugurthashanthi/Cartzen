@@ -40,7 +40,7 @@ const REALITY_OUTCOMES: Record<string, { title: string; sub: string; color: stri
   },
   no: {
     title: "Urge vanished — you just saved real money! 🎉",
-    sub: "This is exactly why FakeBasket exists. The craving was temporary.",
+    sub: "This is exactly why Fake Basket exists. The craving was temporary.",
     color: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-800 dark:text-green-400",
   },
 };
