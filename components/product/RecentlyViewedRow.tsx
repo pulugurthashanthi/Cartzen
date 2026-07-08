@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/ProductImage";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -24,10 +24,9 @@ export function RecentlyViewedRow() {
             className="card-hover group overflow-hidden flex-shrink-0 w-24"
           >
             <div className="relative aspect-square bg-gray-50 dark:bg-gray-800 overflow-hidden">
-              <Image
+              <ProductImage
                 src={p.image}
                 alt={p.name}
-                fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="120px"
               />

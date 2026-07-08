@@ -1,6 +1,4 @@
 "use client";
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, ShoppingCart, Snowflake, Check, Heart } from "lucide-react";
@@ -8,6 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useWishlist } from "@/hooks/useWishlist";
 import { showToast } from "@/components/ui/Toast";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -31,7 +30,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const inCart = items.some((i) => i.productId === product.id);
   const inCooling = isInCoolingOff(product.id);
   const wishlisted = isWishlisted(product.id);
-  const [imgError, setImgError] = useState(false);
 
   return (
     <div
@@ -42,21 +40,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
     >
       {/* Image */}
       <Link href={`/product/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-gray-50 dark:bg-gray-800">
-        {imgError ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-blue-50 dark:bg-gray-800">
-            <span className="text-3xl">🛍️</span>
-            <span className="text-[10px] text-gray-400">Image unavailable</span>
-          </div>
-        ) : (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            onError={() => setImgError(true)}
-          />
-        )}
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        />
         {product.badge && (
           <span className={cn("badge absolute top-3 left-3 shadow-sm", BADGE_STYLES[product.badge])}>
             {product.badge === "bestseller" ? "🏆 Bestseller"

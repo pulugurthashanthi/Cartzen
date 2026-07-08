@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { useDreamVault } from "@/hooks/useDreamVault";
 import { formatPrice } from "@/lib/utils";
@@ -40,11 +40,11 @@ export function DreamStrip() {
             className="snap-start flex-shrink-0 w-20 group"
           >
             <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
-              <Image
+              <ProductImage
                 src={item.product.image}
                 alt={item.product.name}
-                fill
                 className="object-cover group-hover:scale-105 transition-transform"
+                sizes="80px"
               />
             </div>
             <p className="text-[10px] text-gray-500 line-clamp-1 mt-1">{item.product.name}</p>

@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/ui/ProductImage";
 import {
   Star, ShoppingCart, Snowflake, ChevronLeft, Check,
   Truck, Shield, RotateCcw, MapPin, BadgeCheck, ThumbsUp,
@@ -256,10 +256,10 @@ export default function ProductPage() {
         {/* ── Images ── */}
         <div className="space-y-4">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-900">
-            <Image
+            <ProductImage
+              key={product.images[activeImage] || product.image}
               src={product.images[activeImage] || product.image}
               alt={product.name}
-              fill
               className="object-cover"
               priority
             />
@@ -280,7 +280,7 @@ export default function ProductPage() {
                     activeImage === i ? "border-zen-500" : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                   )}
                 >
-                  <Image src={img} alt="" fill className="object-cover" />
+                  <ProductImage src={img} alt="" className="object-cover" sizes="80px" />
                 </button>
               ))}
             </div>
@@ -693,7 +693,7 @@ export default function ProductPage() {
             {similarProducts.map((p) => (
               <Link key={p.id} href={`/product/${p.id}`} className="card-hover group overflow-hidden">
                 <div className="relative aspect-square bg-gray-50 dark:bg-gray-800 overflow-hidden">
-                  <Image src={p.image} alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="200px" />
+                  <ProductImage src={p.image} alt={p.name} className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="200px" />
                   {p.discount && (
                     <span className="absolute top-2 left-2 text-[10px] font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-md">
                       {p.discount}%
@@ -719,7 +719,7 @@ export default function ProductPage() {
             {recentProducts.map((p) => (
               <Link key={p.id} href={`/product/${p.id}`} className="card-hover group overflow-hidden">
                 <div className="relative aspect-square bg-gray-50 dark:bg-gray-800 overflow-hidden">
-                  <Image src={p.image} alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="200px" />
+                  <ProductImage src={p.image} alt={p.name} className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="200px" />
                 </div>
                 <div className="p-3">
                   <p className="text-xs text-gray-400 mb-0.5">{p.brand}</p>

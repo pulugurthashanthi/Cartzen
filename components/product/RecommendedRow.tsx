@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { Sparkles } from "lucide-react";
 import { products } from "@/data/products";
 import { recentlyViewedStorage } from "@/lib/storage";
@@ -62,11 +62,11 @@ export function RecommendedRow() {
             className="snap-start flex-shrink-0 w-24 group"
           >
             <div className="relative rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 aspect-square mb-1.5">
-              <Image
+              <ProductImage
                 src={product.image}
                 alt={product.name}
-                fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="96px"
               />
               {product.badge && (
                 <div className="absolute top-1 left-1 bg-indigo-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize">
