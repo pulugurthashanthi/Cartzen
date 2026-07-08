@@ -153,7 +153,7 @@ export function useRewards() {
   }, [commit]);
 
   // ─── SAVINGS COINS REDEMPTION ────────────────────────────────────────────────
-  // Returns the CartZen discount (in rupees) the user chose to apply, and deducts coins.
+  // Returns the FakeBasket discount (in rupees) the user chose to apply, and deducts coins.
   const redeemSavingsCoins = useCallback((coinsToSpend: number): number => {
     const current = rewardsStorage.get();
     const clamped = Math.min(coinsToSpend, current.savingsCoins);

@@ -76,7 +76,7 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [applyCoins, setApplyCoins] = useState(false);
 
-  // 10 coins = ₹1 CartZen discount, applied in multiples of 10, capped at cart total
+  // 10 coins = ₹1 FakeBasket discount, applied in multiples of 10, capped at cart total
   const maxCoinsApplicable = Math.min(savingsCoins, Math.floor(total) * 10);
   const coinDiscount = applyCoins ? Math.floor(maxCoinsApplicable / 10) : 0;
 

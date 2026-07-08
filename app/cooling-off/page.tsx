@@ -169,7 +169,7 @@ export default function CoolingOffPage() {
             Either incredible willpower, or you haven&apos;t met our products.
           </p>
           <p className="text-gray-400 dark:text-gray-500 text-xs mb-6">
-            Research: 74% of impulse urges vanish within 7 days. CartZen helps you wait it out.
+            Research: 74% of impulse urges vanish within 7 days. FakeBasket helps you wait it out.
           </p>
           <Link href="/" className="btn-primary">Browse Products</Link>
         </div>
@@ -343,7 +343,7 @@ export default function CoolingOffPage() {
           </h3>
           <p className="text-xs text-blue-700 dark:text-blue-500 leading-relaxed">
             Research shows 74% of shopping urges vanish within 7 days without a single purchase.
-            CartZen tracks your cool-off results — the more data you build, the more you understand
+            FakeBasket tracks your cool-off results — the more data you build, the more you understand
             your own triggers. You&apos;re not fighting urges; you&apos;re outlasting them.
           </p>
         </div>

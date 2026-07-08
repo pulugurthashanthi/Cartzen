@@ -11,20 +11,20 @@ import { CelebrationManager } from "@/components/celebrations/CelebrationManager
 import { ChallengeWatcher } from "@/components/engagement/ChallengeWatcher";
 
 export const metadata: Metadata = {
-  title: "CartZen — Shop Without Spending",
+  title: "FakeBasket — Shop Without Spending",
   description:
-    "Satisfy your shopping urge mindfully. CartZen helps you overcome impulse spending through simulated shopping experiences.",
+    "Satisfy your shopping urge mindfully. FakeBasket helps you overcome impulse spending through simulated shopping experiences.",
   keywords: ["mindful shopping", "impulse spending", "financial wellness"],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CartZen",
+    title: "FakeBasket",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: "#3b82f6",
 };
 
 export default function RootLayout({

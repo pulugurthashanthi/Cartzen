@@ -333,9 +333,9 @@ export default function ProductPage() {
           </div>
 
 
-          {/* CartZen tip */}
+          {/* FakeBasket tip */}
           <div className="p-3 rounded-xl bg-zen-50 dark:bg-zen-950/50 border border-zen-100 dark:border-zen-900 text-sm text-zen-700 dark:text-zen-400">
-            💡 <span className="font-medium">CartZen tip:</span> Place this order to save{" "}
+            💡 <span className="font-medium">FakeBasket tip:</span> Place this order to save{" "}
             <span className="font-bold">{formatPrice(product.price)}</span> — ₹0 will actually leave your account. 😇
           </div>
 

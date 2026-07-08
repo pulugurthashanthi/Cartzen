@@ -31,18 +31,18 @@ const GENERIC_INSIGHTS: Record<ShoppingReason, string[]> = {
     "Researchers call boredom-shopping 'hedonic escapism'. Which sounds much fancier than it is. You're doing great.",
   ],
   stressed: [
-    "Stress-shopping floods the brain with short-term dopamine — but the relief fades in minutes. CartZen gave you the hit for free.",
+    "Stress-shopping floods the brain with short-term dopamine — but the relief fades in minutes. FakeBasket gave you the hit for free.",
     "Your nervous system found a healthy outlet. The urge to spend when stressed is real, but so is your ability to resist it.",
     "Studies show stressed shoppers spend 30–50% more per session. You just saved that entire percentage. Science. 🧬",
   ],
   rewarding_myself: [
-    "You absolutely deserve a reward. The fact that CartZen lets you feel it without spending it? That's the whole idea.",
+    "You absolutely deserve a reward. The fact that FakeBasket lets you feel it without spending it? That's the whole idea.",
     "Self-gifting is a real psychological need. Fulfilling it for ₹0 is the most boss move possible.",
     "Treating yourself doesn't require a credit card. You just proved it. 👑",
   ],
   need_product: [
     "When the need is real, the urge doesn't disappear with time. If this still calls you in 7 days, it might be worth buying for real.",
-    "Genuine needs deserve genuine consideration. CartZen helped you simulate the purchase — now you can decide calmly.",
+    "Genuine needs deserve genuine consideration. FakeBasket helped you simulate the purchase — now you can decide calmly.",
     "The simulation is complete. You've experienced the 'having it' feeling. Now ask: do I need to actually buy this?",
   ],
   just_browsing: [

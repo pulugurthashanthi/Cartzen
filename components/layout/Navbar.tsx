@@ -74,8 +74,8 @@ export function Navbar() {
             <div className="w-8 h-8 rounded-xl zen-gradient flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
               <Leaf className="w-4 h-4 text-white" />
             </div>
-            <span className="font-display font-bold text-xl tracking-tight">
-              Cart<span className="zen-gradient-text">Zen</span>
+            <span className="font-display font-bold text-xl tracking-tight zen-gradient-text">
+              FakeBasket
             </span>
           </Link>
 
