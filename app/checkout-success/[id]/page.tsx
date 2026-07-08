@@ -7,6 +7,7 @@ import {
   Sparkles, MapPin, Calendar, ShoppingBag, Brain,
 } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatPrice, cn } from "@/lib/utils";
 import { generateTherapistInsight } from "@/lib/therapist";
 import { lootClaimStorage } from "@/lib/storage";
@@ -34,6 +35,7 @@ export default function CheckoutSuccessPage() {
   const params = useParams();
   const router = useRouter();
   const { getOrder, savings, orders, refreshOrders } = useOrders();
+  const { user, loading: authLoading, signIn } = useAuth();
   const [show, setShow] = useState(false);
   const [showLoot, setShowLoot] = useState(false);
   const [deliveryDate] = useState(getDeliveryDate);
@@ -95,6 +97,27 @@ export default function CheckoutSuccessPage() {
             </p>
           )}
         </div>
+
+        {/* Guest backup nudge — progress lives only in this browser until they sign in */}
+        {!authLoading && !user && (
+          <div className="bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900 rounded-2xl p-4 mb-4 flex items-center gap-3 shadow-sm">
+            <span className="text-2xl flex-shrink-0">☁️</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Don&apos;t lose this progress
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Your savings, streak &amp; coins live only in this browser. Sign in to back them up.
+              </p>
+            </div>
+            <button
+              onClick={signIn}
+              className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold zen-gradient text-white hover:opacity-90 transition-opacity active:scale-95"
+            >
+              Sign in
+            </button>
+          </div>
+        )}
 
         {/* Delivery estimate — like Flipkart/Amazon */}
         <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 mb-4 flex items-start gap-4 shadow-sm">
