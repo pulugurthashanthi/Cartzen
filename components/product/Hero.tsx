@@ -45,10 +45,14 @@ export function Hero() {
         />
       )}
 
-      <div className="relative overflow-hidden rounded-3xl bg-blue-50 dark:bg-gray-900 p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+      <div className="relative overflow-hidden rounded-3xl bg-blue-50 dark:bg-gray-900 p-5 sm:p-6 md:p-8">
+        {/* justify-center + an explicit gap (not justify-between) — with
+            between, any slack in the max-w wrapper became dead space in the
+            middle regardless of the gap value, which is what stretched the
+            text-to-illustration gap out on wide desktops. */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-5 lg:gap-12 max-w-3xl mx-auto">
           {/* Greeting + CTA */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 lg:max-w-md">
             <p className="text-blue-600 dark:text-blue-400 font-semibold text-sm mb-1">
               {timeGreeting()}, {firstName} 👋
             </p>
@@ -75,35 +79,28 @@ export function Hero() {
               <ShoppingBasket className="w-4 h-4" />
               {r.dailyBoxAvailable ? "Open Daily Box" : "Daily Box Claimed"}
             </button>
-          </div>
 
-          {/* Illustration + stats */}
-          <div className="flex flex-col items-center gap-4">
-            <BasketIllustration className="w-28 h-28 md:w-36 md:h-36" />
-            <div className="flex items-center gap-5 sm:gap-8">
-              <div className="text-center">
-                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
-                  <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  {formatPrice(savings)}
-                </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">Coins Balance</p>
-              </div>
-              <div className="text-center">
-                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
-                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
-                  {r.engagement.streakCurrent} Day{r.engagement.streakCurrent === 1 ? "" : "s"}
-                </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">Streak</p>
-              </div>
-              <div className="text-center">
-                <p className="flex items-center justify-center gap-1 text-base md:text-lg font-bold text-gray-900 dark:text-gray-100">
-                  <Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
-                  {r.xp}
-                </p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">XP Points</p>
-              </div>
+            {/* Compact stats strip — secondary info, kept out of the way of
+                the headline/CTA and out of the illustration's alignment. */}
+            <div className="flex items-center gap-2 flex-wrap mt-4">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                {formatPrice(savings)}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
+                {r.engagement.streakCurrent} Day{r.engagement.streakCurrent === 1 ? "" : "s"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                <Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
+                {r.xp} XP
+              </span>
             </div>
           </div>
+
+          {/* Illustration — decorative, so it's the first thing dropped on
+              smaller screens to get search/products above the fold sooner. */}
+          <BasketIllustration className="hidden lg:block w-32 h-32 flex-shrink-0" />
         </div>
       </div>
     </section>
