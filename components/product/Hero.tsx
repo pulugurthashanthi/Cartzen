@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useOrders } from "@/hooks/useOrders";
 import { useRewards } from "@/hooks/useRewards";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatPrice, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { BasketIllustration } from "@/components/ui/BasketIllustration";
 import { LootBoxModal } from "@/components/rewards/LootBoxModal";
 import { boxSkinGradient } from "@/lib/engagement";
 import { sound } from "@/lib/sound";
-import { ShoppingBasket, Flame, Star, Coins } from "lucide-react";
+import { ShoppingBasket } from "lucide-react";
 import type { RewardDrop } from "@/types";
 
 function timeGreeting() {
@@ -19,7 +18,6 @@ function timeGreeting() {
 }
 
 export function Hero() {
-  const { savings } = useOrders();
   const r = useRewards();
   const { user } = useAuth();
   const [activeBox, setActiveBox] = useState<{ drop: RewardDrop; title: string } | null>(null);
@@ -79,28 +77,16 @@ export function Hero() {
               <ShoppingBasket className="w-4 h-4" />
               {r.dailyBoxAvailable ? "Open Daily Box" : "Daily Box Claimed"}
             </button>
-
-            {/* Compact stats strip — secondary info, kept out of the way of
-                the headline/CTA and out of the illustration's alignment. */}
-            <div className="flex items-center gap-2 flex-wrap mt-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
-                <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                {formatPrice(savings)}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-400" />
-                {r.engagement.streakCurrent} Day{r.engagement.streakCurrent === 1 ? "" : "s"}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 dark:bg-gray-800/70 text-xs font-semibold text-gray-700 dark:text-gray-200">
-                <Star className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
-                {r.xp} XP
-              </span>
-            </div>
           </div>
 
-          {/* Compact beside the text at every size — small enough on mobile
-              that it doesn't push search/products down the page. */}
-          <BasketIllustration className="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 flex-shrink-0" />
+          {/* Basket sits on a soft blurred glow instead of floating bare on
+              the flat background — that glow is the "blending" into the
+              panel. Bigger on desktop where there's room to make it a real
+              visual anchor, not just a small sticker in a lot of empty blue. */}
+          <div className="relative flex-shrink-0 flex items-center justify-center">
+            <div className="absolute inset-0 m-auto w-28 h-28 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full bg-blue-200/60 dark:bg-blue-500/10 blur-2xl" />
+            <BasketIllustration className="relative w-20 h-20 sm:w-32 sm:h-32 lg:w-44 lg:h-44" />
+          </div>
         </div>
       </div>
     </section>
