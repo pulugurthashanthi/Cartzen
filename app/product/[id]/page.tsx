@@ -15,6 +15,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useDreamVault } from "@/hooks/useDreamVault";
 import { recentlyViewedStorage } from "@/lib/storage";
+import { importedProductsStorage } from "@/lib/importedProducts";
 import { trackChallenge } from "@/lib/track";
 import { formatPrice, cn } from "@/lib/utils";
 import type { Product, DreamVaultCategory } from "@/types";
@@ -156,6 +157,12 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (staticProduct) return;
+    const imported = importedProductsStorage.find(params.id as string);
+    if (imported) {
+      setProduct(imported);
+      setLoadingProduct(false);
+      return;
+    }
     async function fetchFromFirestore() {
       try {
         const snap = await getDoc(doc(db, "products", params.id as string));

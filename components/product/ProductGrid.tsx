@@ -1,7 +1,8 @@
 "use client";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, X, ChevronDown, ChevronRight, Check } from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronDown, ChevronRight, Check, Link2 } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { products as staticProducts, categories as staticCategories } from "@/data/products";
@@ -160,7 +161,7 @@ export function ProductGrid() {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8">
 
       {/* Search + filter row */}
-      <div className="flex gap-3 max-w-3xl mx-auto mb-4">
+      <div className="flex gap-3 max-w-3xl mx-auto mb-1">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -266,6 +267,28 @@ export function ProductGrid() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Paste-a-link row: nudge, plus a smart banner when a URL lands in search */}
+      <div className="max-w-3xl mx-auto mb-4">
+        {/^https?:\/\/\S+$/i.test(search.trim()) ? (
+          <Link
+            href={`/import?url=${encodeURIComponent(search.trim())}`}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 text-sm font-medium text-blue-700 dark:text-blue-300 hover:border-blue-400 transition-colors"
+          >
+            <Link2 className="w-4 h-4 flex-shrink-0" />
+            That looks like a product link — import it into your fake basket
+            <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0" />
+          </Link>
+        ) : (
+          <Link
+            href="/import"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-1 py-1"
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            Tempted by something elsewhere? Paste the link
+          </Link>
+        )}
       </div>
 
       {/* Discover header */}
