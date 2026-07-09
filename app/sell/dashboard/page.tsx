@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  collection, query, where, orderBy, getDocs, addDoc, deleteDoc, updateDoc, doc,
+  collection, query, where, getDocs, addDoc, deleteDoc, updateDoc, doc,
 } from "firebase/firestore";
 import { Store, Plus, Trash2, Pencil, Clock, CheckCircle2, XCircle, Loader2, X } from "lucide-react";
 import { db } from "@/lib/firebase";
@@ -49,10 +49,15 @@ export default function SellerDashboardPage() {
     if (!user) return;
     setFetching(true);
     try {
-      const snap = await getDocs(
-        query(collection(db, "sellerProducts"), where("sellerId", "==", user.uid), orderBy("submittedAt", "desc"))
-      );
-      setListings(snap.docs.map((d) => ({ id: d.id, ...d.data() } as SellerProduct)));
+      // Sort client-side rather than orderBy() in the query: combining an
+      // equality where() with orderBy() on a different field needs a
+      // composite Firestore index, and without one the query throws and
+      // silently leaves the dashboard empty — which is exactly what makes
+      // an admin approval look like it "didn't show up" for the seller.
+      const snap = await getDocs(query(collection(db, "sellerProducts"), where("sellerId", "==", user.uid)));
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as SellerProduct));
+      docs.sort((a, b) => (b.submittedAt || "").localeCompare(a.submittedAt || ""));
+      setListings(docs);
     } catch {
       showToast("Couldn't load your listings", "info");
     }

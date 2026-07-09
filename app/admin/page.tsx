@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   collection,
@@ -24,7 +24,9 @@ import {
   Shield,
   ClipboardCheck,
   Store,
+  IndianRupee,
 } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 import type { SellerProduct, UserRole, FeeStatus } from "@/types";
 
 interface FSProduct {
@@ -71,6 +73,37 @@ export default function AdminPage() {
   const [form, setForm] = useState(EMPTY_PRODUCT);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Who's selling what, and who owes what — joins sellerProducts back to the
+  // users list so admin sees a name, not just a uid buried in each listing.
+  interface SellerStat {
+    sellerId: string; email: string; storeName: string; name?: string;
+    total: number; live: number; pending: number;
+    feesDue: number; feesPaid: number; feesWaived: number;
+  }
+  const sellerStats = useMemo<SellerStat[]>(() => {
+    const map = new Map<string, SellerStat>();
+    for (const l of listings) {
+      if (!map.has(l.sellerId)) {
+        const u = users.find((x) => x.id === l.sellerId);
+        map.set(l.sellerId, {
+          sellerId: l.sellerId, email: l.sellerEmail, storeName: l.storeName, name: u?.name,
+          total: 0, live: 0, pending: 0, feesDue: 0, feesPaid: 0, feesWaived: 0,
+        });
+      }
+      const s = map.get(l.sellerId)!;
+      s.total++;
+      if (l.status === "pending_review") s.pending++;
+      if (l.status === "approved") {
+        s.live++;
+        const fee = l.listingFee ?? 0;
+        if (l.feeStatus === "unpaid") s.feesDue += fee;
+        else if (l.feeStatus === "paid") s.feesPaid += fee;
+        else if (l.feeStatus === "waived") s.feesWaived += fee;
+      }
+    }
+    return [...map.values()].sort((a, b) => b.feesDue - a.feesDue);
+  }, [listings, users]);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) router.replace("/");
@@ -134,6 +167,14 @@ export default function AdminPage() {
   async function setListingFee(l: SellerProduct, feeStatus: FeeStatus) {
     await updateDoc(doc(db, "sellerProducts", l.id), { feeStatus });
     setListings((prev) => prev.map((x) => (x.id === l.id ? { ...x, feeStatus } : x)));
+  }
+
+  async function markSellerFeesPaid(sellerId: string) {
+    const due = listings.filter((l) => l.sellerId === sellerId && l.status === "approved" && l.feeStatus === "unpaid");
+    if (due.length === 0) return;
+    await Promise.all(due.map((l) => updateDoc(doc(db, "sellerProducts", l.id), { feeStatus: "paid" })));
+    const ids = new Set(due.map((l) => l.id));
+    setListings((prev) => prev.map((l) => (ids.has(l.id) ? { ...l, feeStatus: "paid" } : l)));
   }
 
   function startEdit(p: FSProduct) {
@@ -431,6 +472,45 @@ export default function AdminPage() {
           <p className="text-xs text-gray-400 mb-4">
             Approve to publish into the live catalogue. Fees are tracked per approved listing.
           </p>
+
+          {/* Sellers & payments */}
+          {sellerStats.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <IndianRupee className="w-4 h-4 text-amber-500" />
+                <h3 className="font-semibold text-sm">Sellers & payments</h3>
+                <span className="text-xs text-gray-400">
+                  {formatPrice(sellerStats.reduce((s, x) => s + x.feesDue, 0))} total due across {sellerStats.length} seller{sellerStats.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {sellerStats.map((s) => (
+                  <div key={s.sellerId} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{s.name || s.storeName || "—"}</p>
+                      <p className="text-xs text-gray-400 truncate">{s.storeName && s.name ? `${s.storeName} · ` : ""}{s.email}</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
+                      <span>{s.live} live{s.pending > 0 ? `, ${s.pending} pending` : ""}</span>
+                      <span className={s.feesDue > 0 ? "font-semibold text-amber-600 dark:text-amber-400" : "text-gray-400"}>
+                        {formatPrice(s.feesDue)} due
+                      </span>
+                      {s.feesPaid > 0 && <span className="text-green-600 dark:text-green-400">{formatPrice(s.feesPaid)} paid</span>}
+                    </div>
+                    {s.feesDue > 0 && (
+                      <button
+                        onClick={() => markSellerFeesPaid(s.sellerId)}
+                        className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700"
+                      >
+                        Mark all paid
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {listings.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <Store className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -466,7 +546,8 @@ export default function AdminPage() {
                           {l.brand} · ₹{l.price?.toLocaleString()} · {l.category}
                         </p>
                         <p className="text-[11px] text-gray-400 mt-0.5">
-                          {l.storeName || "—"} ({l.sellerEmail}) · submitted{" "}
+                          {users.find((u) => u.id === l.sellerId)?.name || l.storeName || "Unknown seller"}
+                          {l.storeName ? ` · ${l.storeName}` : ""} · {l.sellerEmail} · submitted{" "}
                           {l.submittedAt ? new Date(l.submittedAt).toLocaleDateString() : "—"}
                         </p>
                         {l.description && (
@@ -565,6 +646,15 @@ export default function AdminPage() {
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : u.role === "seller" ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
                             {u.role}
                           </span>
+                          {(() => {
+                            const s = sellerStats.find((x) => x.sellerId === u.id);
+                            if (!s) return null;
+                            return (
+                              <span className="ml-1.5 text-[11px] text-gray-400">
+                                {s.live} live{s.feesDue > 0 ? `, ${formatPrice(s.feesDue)} due` : ""}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-gray-500">
                           {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
@@ -601,6 +691,15 @@ export default function AdminPage() {
                         {u.role}
                       </span>
                     </div>
+                    {(() => {
+                      const s = sellerStats.find((x) => x.sellerId === u.id);
+                      if (!s) return null;
+                      return (
+                        <p className="text-[11px] text-gray-400 mb-2">
+                          {s.live} live listing{s.live !== 1 ? "s" : ""}{s.feesDue > 0 ? ` · ${formatPrice(s.feesDue)} due` : ""}
+                        </p>
+                      );
+                    })()}
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-gray-400">
                         Joined {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
