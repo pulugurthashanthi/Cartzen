@@ -46,13 +46,13 @@ export function Hero() {
       )}
 
       <div className="relative overflow-hidden rounded-3xl bg-blue-50 dark:bg-gray-900 p-5 sm:p-6 md:p-8">
-        {/* justify-center + an explicit gap (not justify-between) — with
-            between, any slack in the max-w wrapper became dead space in the
-            middle regardless of the gap value, which is what stretched the
-            text-to-illustration gap out on wide desktops. */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center gap-5 lg:gap-12 max-w-3xl mx-auto">
+        {/* Row at every breakpoint (not flex-col on mobile) so the basket
+            sits beside the text instead of stacking below it and re-adding
+            height. justify-center + a fixed gap, not justify-between, so the
+            gap can't stretch with the viewport on wide desktops. */}
+        <div className="flex flex-row items-center justify-center gap-4 sm:gap-8 lg:gap-12 max-w-3xl mx-auto">
           {/* Greeting + CTA */}
-          <div className="min-w-0 lg:max-w-md">
+          <div className="flex-1 min-w-0 lg:max-w-md">
             <p className="text-blue-600 dark:text-blue-400 font-semibold text-sm mb-1">
               {timeGreeting()}, {firstName} 👋
             </p>
@@ -98,9 +98,9 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Illustration — decorative, so it's the first thing dropped on
-              smaller screens to get search/products above the fold sooner. */}
-          <BasketIllustration className="hidden lg:block w-32 h-32 flex-shrink-0" />
+          {/* Compact beside the text at every size — small enough on mobile
+              that it doesn't push search/products down the page. */}
+          <BasketIllustration className="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 flex-shrink-0" />
         </div>
       </div>
     </section>
