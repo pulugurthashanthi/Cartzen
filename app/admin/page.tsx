@@ -95,7 +95,9 @@ export default function AdminPage() {
       s.total++;
       if (l.status === "pending_review") s.pending++;
       if (l.status === "approved") {
-        s.live++;
+        // Delisted listings stay "approved" so fee history survives — but
+        // they're no longer live, so they shouldn't count toward it.
+        if (!l.delisted) s.live++;
         const fee = l.listingFee ?? 0;
         if (l.feeStatus === "unpaid") s.feesDue += fee;
         else if (l.feeStatus === "paid") s.feesPaid += fee;
@@ -532,14 +534,16 @@ export default function AdminPage() {
                           <p className="font-semibold text-sm">{l.name}</p>
                           <span
                             className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                              l.status === "pending_review"
+                              l.delisted
+                                ? "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                : l.status === "pending_review"
                                 ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
                                 : l.status === "approved"
                                 ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
                                 : "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400"
                             }`}
                           >
-                            {l.status === "pending_review" ? "Pending" : l.status === "approved" ? "Approved" : "Rejected"}
+                            {l.delisted ? "Off sale" : l.status === "pending_review" ? "Pending" : l.status === "approved" ? "Approved" : "Rejected"}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">

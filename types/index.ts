@@ -59,6 +59,11 @@ export interface SellerProduct {
   reviewedAt?: string;
   rejectionReason?: string;
   publishedProductId?: string;
+  // Seller pulled an approved listing from sale. Status stays "approved" (fee
+  // history and review record are preserved) but it's excluded from "live"
+  // counts, and the published product is marked out of stock.
+  delisted?: boolean;
+  delistedAt?: string;
 }
 
 export interface CartItem {

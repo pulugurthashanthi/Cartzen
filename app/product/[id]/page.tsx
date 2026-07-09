@@ -425,16 +425,21 @@ export default function ProductPage() {
           <div className="flex gap-3">
             <button
               onClick={handleAddToCart}
+              disabled={!product.inStock}
               className={cn(
                 "flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95",
-                addedToCart
+                !product.inStock
+                  ? "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed active:scale-100"
+                  : addedToCart
                   ? "bg-zen-500 text-white"
                   : inCart
                   ? "bg-zen-100 dark:bg-zen-900/50 text-zen-700 dark:text-zen-400 border-2 border-zen-200 dark:border-zen-800"
                   : "btn-primary"
               )}
             >
-              {addedToCart ? (
+              {!product.inStock ? (
+                "Out of Stock"
+              ) : addedToCart ? (
                 <><Check className="w-4 h-4" />Added!</>
               ) : (
                 <><ShoppingCart className="w-4 h-4" />{inCart ? "Add More" : "Add to Cart"}</>

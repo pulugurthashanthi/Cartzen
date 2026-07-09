@@ -30,6 +30,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const inCart = items.some((i) => i.productId === product.id);
   const inCooling = isInCoolingOff(product.id);
   const wishlisted = isWishlisted(product.id);
+  const outOfStock = product.inStock === false;
 
   return (
     <div
@@ -43,10 +44,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
         <ProductImage
           src={product.image}
           alt={product.name}
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={cn("object-cover transition-transform duration-500 group-hover:scale-105", outOfStock && "grayscale opacity-60")}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
-        {product.badge && (
+        {outOfStock && (
+          <span className="badge absolute top-3 left-3 shadow-sm bg-gray-800/90 text-white">
+            Out of Stock
+          </span>
+        )}
+        {!outOfStock && product.badge && (
           <span className={cn("badge absolute top-3 left-3 shadow-sm", BADGE_STYLES[product.badge])}>
             {product.badge === "bestseller" ? "🏆 Bestseller"
               : product.badge === "new" ? "✨ New"
@@ -54,7 +60,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
               : `${product.discount}% OFF`}
           </span>
         )}
-        {product.discount && !product.badge && (
+        {!outOfStock && product.discount && !product.badge && (
           <span className="badge absolute top-3 left-3 bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400 shadow-sm">
             {product.discount}% OFF
           </span>
@@ -126,16 +132,19 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {/* Actions */}
         <div className="flex gap-2 mt-auto pt-2">
           <button
-            onClick={() => inCart ? router.push("/cart") : addItem(product)}
+            onClick={() => (outOfStock ? undefined : inCart ? router.push("/cart") : addItem(product))}
+            disabled={outOfStock}
             className={cn(
               "flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95",
-              inCart
+              outOfStock
+                ? "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed active:scale-100"
+                : inCart
                 ? "bg-zen-100 dark:bg-zen-900/50 text-zen-700 dark:text-zen-400"
                 : "btn-primary"
             )}
           >
             <ShoppingCart className="w-3.5 h-3.5" />
-            {inCart ? "Go to Cart" : "Add to Cart"}
+            {outOfStock ? "Out of Stock" : inCart ? "Go to Cart" : "Add to Cart"}
           </button>
           <div className="relative group/cool">
             <button

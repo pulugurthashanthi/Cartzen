@@ -7,10 +7,16 @@ service cloud.firestore {
         request.auth.token.email == "shanthi87p@gmail.com";
     }
 
-    // Products: anyone can read, only admin can write
+    // Products: anyone can read, only admin can write — except a seller may
+    // take their own product off-shelf (flip inStock to false, nothing else)
+    // when they delist the listing that published it.
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() ||
+        (request.auth != null && request.auth.uid == resource.data.sellerId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(["inStock"]) &&
+          request.resource.data.inStock == false);
     }
 
     // Users: each user owns their document and their data subcollection
@@ -41,15 +47,24 @@ service cloud.firestore {
         request.resource.data.sellerId == request.auth.uid &&
         request.resource.data.status == "pending_review";
       // Sellers can edit until approval; edits go back to review and cannot
-      // touch ownership or fee bookkeeping. Admin can update anything.
+      // touch ownership or fee bookkeeping. Once approved, the only self-serve
+      // change left is delisting (soft-remove from sale — keeps the fee/review
+      // record intact for admin's payment tracking). Admin can update anything.
       allow update: if isAdmin() ||
         (request.auth != null && request.auth.uid == resource.data.sellerId &&
           resource.data.status != "approved" &&
           request.resource.data.sellerId == resource.data.sellerId &&
           request.resource.data.status == "pending_review" &&
-          request.resource.data.feeStatus == resource.data.feeStatus);
+          request.resource.data.feeStatus == resource.data.feeStatus) ||
+        (request.auth != null && request.auth.uid == resource.data.sellerId &&
+          resource.data.status == "approved" &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(["delisted", "delistedAt"]) &&
+          request.resource.data.delisted == true);
+      // Hard delete stays available for pending/rejected listings only —
+      // an approved one must go through delist so its fee record survives.
       allow delete: if isAdmin() ||
-        (request.auth != null && request.auth.uid == resource.data.sellerId);
+        (request.auth != null && request.auth.uid == resource.data.sellerId &&
+          resource.data.status != "approved");
     }
   }
 }

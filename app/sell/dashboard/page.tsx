@@ -115,6 +115,22 @@ export default function SellerDashboardPage() {
   };
 
   const remove = async (l: SellerProduct) => {
+    if (l.status === "approved") {
+      // Soft-delist: take the published product off-shelf but keep the
+      // review/fee record intact. A hard delete here would silently leave
+      // the product looking "in stock" forever with no owner to fix it.
+      if (!confirm(`Stop selling "${l.name}"? It'll come off the storefront immediately.`)) return;
+      const delistedAt = new Date().toISOString();
+      await Promise.all([
+        updateDoc(doc(db, "sellerProducts", l.id), { delisted: true, delistedAt }),
+        l.publishedProductId
+          ? updateDoc(doc(db, "products", l.publishedProductId), { inStock: false })
+          : Promise.resolve(),
+      ]);
+      setListings((prev) => prev.map((x) => (x.id === l.id ? { ...x, delisted: true, delistedAt } : x)));
+      showToast("Taken off sale", "info");
+      return;
+    }
     if (!confirm(`Remove "${l.name}"?`)) return;
     await deleteDoc(doc(db, "sellerProducts", l.id));
     setListings((prev) => prev.filter((x) => x.id !== l.id));
@@ -134,7 +150,7 @@ export default function SellerDashboardPage() {
     );
   }
 
-  const liveCount = listings.filter((l) => l.status === "approved").length;
+  const liveCount = listings.filter((l) => l.status === "approved" && !l.delisted).length;
   const pendingCount = listings.filter((l) => l.status === "pending_review").length;
   const feesDue = listings.filter((l) => l.status === "approved" && l.feeStatus === "unpaid")
     .reduce((s, l) => s + (l.listingFee ?? LISTING_FEE_INR), 0);
@@ -250,14 +266,21 @@ export default function SellerDashboardPage() {
         <div className="space-y-3">
           {listings.map((l) => {
             const meta = STATUS_META[l.status];
+            const delisted = l.status === "approved" && l.delisted;
             return (
-              <div key={l.id} className="card p-4 flex items-center gap-3">
+              <div key={l.id} className={cn("card p-4 flex items-center gap-3", delisted && "opacity-60")}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold truncate">{l.name}</p>
-                    <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold", meta.cls)}>
-                      <meta.icon className="w-3 h-3" /> {meta.label}
-                    </span>
+                    {delisted ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500">
+                        <XCircle className="w-3 h-3" /> Off sale
+                      </span>
+                    ) : (
+                      <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold", meta.cls)}>
+                        <meta.icon className="w-3 h-3" /> {meta.label}
+                      </span>
+                    )}
                     {l.status === "approved" && (
                       <span className="text-[11px] text-gray-400">{FEE_STATUS_LABELS[l.feeStatus]}</span>
                     )}
@@ -272,9 +295,15 @@ export default function SellerDashboardPage() {
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}
-                <button onClick={() => remove(l)} aria-label="Delete listing" className="p-2 rounded-lg text-gray-400 hover:text-rose-600 transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {!delisted && (
+                  <button
+                    onClick={() => remove(l)}
+                    aria-label={l.status === "approved" ? "Stop selling" : "Delete listing"}
+                    className="p-2 rounded-lg text-gray-400 hover:text-rose-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             );
           })}
