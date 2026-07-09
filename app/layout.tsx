@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ToastContainer } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/PWARegister";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { SyncProvider } from "@/components/SyncProvider";
 import { EngagementBootstrap } from "@/components/engagement/EngagementBootstrap";
 import { CelebrationManager } from "@/components/celebrations/CelebrationManager";
@@ -16,6 +17,13 @@ export const metadata: Metadata = {
     "Satisfy your shopping urge mindfully. Fake Basket helps you overcome impulse spending through simulated shopping experiences.",
   keywords: ["mindful shopping", "impulse spending", "financial wellness"],
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -41,6 +49,7 @@ export default function RootLayout({
             <main className="pt-16">{children}</main>
             <ToastContainer />
             <PWARegister />
+            <InstallPrompt />
             <SyncProvider />
             <EngagementBootstrap />
             <CelebrationManager />
