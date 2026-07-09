@@ -40,6 +40,7 @@ export default function SellerDashboardPage() {
   const [form, setForm] = useState<ListingForm>(EMPTY_FORM);
   const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !isSeller)) router.replace("/sell");
@@ -48,6 +49,7 @@ export default function SellerDashboardPage() {
   const fetchListings = useCallback(async () => {
     if (!user) return;
     setFetching(true);
+    setFetchError(null);
     try {
       // Sort client-side rather than orderBy() in the query: combining an
       // equality where() with orderBy() on a different field needs a
@@ -58,7 +60,13 @@ export default function SellerDashboardPage() {
       const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() } as SellerProduct));
       docs.sort((a, b) => (b.submittedAt || "").localeCompare(a.submittedAt || ""));
       setListings(docs);
-    } catch {
+    } catch (err) {
+      // Surface the real Firestore error (permission-denied, failed-precondition,
+      // etc.) instead of a generic toast — a silent empty state here is exactly
+      // what made the last bug invisible.
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("Failed to load seller listings:", err);
+      setFetchError(message);
       showToast("Couldn't load your listings", "info");
     }
     setFetching(false);
@@ -218,11 +226,25 @@ export default function SellerDashboardPage() {
         <div className="py-16 text-center">
           <div className="w-8 h-8 mx-auto border-2 border-zen-500 border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : fetchError ? (
+        <div className="text-center py-16">
+          <p className="text-5xl mb-3">⚠️</p>
+          <h3 className="font-semibold mb-1">Couldn&apos;t load your listings</h3>
+          <p className="text-sm text-gray-400 mb-3">This is a loading error, not an empty store.</p>
+          <p className="text-xs font-mono text-rose-500 bg-rose-50 dark:bg-rose-950/30 inline-block px-3 py-1.5 rounded-lg mb-4">
+            {fetchError}
+          </p>
+          <br />
+          <button onClick={fetchListings} className="btn-primary px-4 py-2 rounded-xl text-sm font-semibold">
+            Try again
+          </button>
+        </div>
       ) : listings.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-5xl mb-3">🏪</p>
           <h3 className="font-semibold mb-1">No listings yet</h3>
           <p className="text-sm text-gray-400">Add your first product — it goes live once approved.</p>
+          <p className="text-[11px] text-gray-300 dark:text-gray-600 mt-3">Signed in as {user?.email}</p>
         </div>
       ) : (
         <div className="space-y-3">
