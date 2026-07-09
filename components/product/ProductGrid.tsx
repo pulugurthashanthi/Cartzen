@@ -58,6 +58,24 @@ export function ProductGrid() {
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  // Responsive placeholder — the long copy truncated mid-word on phones
+  // ("Search products, bra…"). SSR renders the shortest variant (safe at any
+  // width), then we upgrade after mount and track resizes.
+  const [searchPlaceholder, setSearchPlaceholder] = useState("Search products");
+  useEffect(() => {
+    const pick = () =>
+      setSearchPlaceholder(
+        window.innerWidth >= 1024
+          ? "Search products, brands or categories"
+          : window.innerWidth >= 640
+          ? "Search products or brands"
+          : "Search products"
+      );
+    pick();
+    window.addEventListener("resize", pick);
+    return () => window.removeEventListener("resize", pick);
+  }, []);
+
   // Read ?sort=discount from the URL directly instead of useSearchParams():
   // that hook forces a Suspense boundary around the grid, and React 19 reveals
   // streamed boundaries inside requestAnimationFrame — which never fires in a
@@ -170,7 +188,7 @@ export function ProductGrid() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="search"
-            placeholder="Search products, brands, categories…"
+            placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input pl-11 pr-10 w-full"
@@ -295,26 +313,11 @@ export function ProductGrid() {
         )}
       </div>
 
-      {/* Discover header */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-            ✨ Discover without spending
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">Explore. Feel good. Stay mindful.</p>
-        </div>
-        <button
-          onClick={() => setShowAllCategories((v) => !v)}
-          className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex-shrink-0"
-        >
-          {showAllCategories ? "Show less" : "View all"}
-        </button>
-      </div>
-
-      {/* Category boxes */}
+      {/* Category chips — straight into shopping, no marketing header.
+          The expand toggle lives at the end of the row as a chip. */}
       <div
         className={cn(
-          "gap-2.5 mb-5",
+          "gap-2.5 mb-4",
           showAllCategories ? "flex flex-wrap" : "flex overflow-x-auto pb-3 scrollbar-hide"
         )}
       >
@@ -347,6 +350,13 @@ export function ProductGrid() {
             )}
           </button>
         ))}
+        <button
+          onClick={() => setShowAllCategories((v) => !v)}
+          className="flex items-center gap-1 px-3.5 py-2.5 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0 hover:border-blue-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+        >
+          {showAllCategories ? "Less" : "All"}
+          <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showAllCategories && "rotate-180")} />
+        </button>
       </div>
 
       {/* Active filter chips */}
