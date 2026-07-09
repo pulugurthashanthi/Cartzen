@@ -32,6 +32,35 @@ export interface Review {
 }
 
 // Cart Types
+// Roles & selling
+export type UserRole = "user" | "seller" | "admin";
+
+export type ListingStatus = "pending_review" | "approved" | "rejected";
+export type FeeStatus = "unpaid" | "paid" | "waived";
+
+// A seller's product listing awaiting (or past) review. Lives in the
+// `sellerProducts` Firestore collection; on approval a copy is published
+// into `products` and linked back via publishedProductId.
+export interface SellerProduct {
+  id: string;
+  sellerId: string;
+  sellerEmail: string;
+  storeName: string;
+  name: string;
+  brand: string;
+  price: number;
+  category: string;
+  image: string;
+  description: string;
+  status: ListingStatus;
+  listingFee: number;
+  feeStatus: FeeStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  publishedProductId?: string;
+}
+
 export interface CartItem {
   productId: string;
   product: Product;

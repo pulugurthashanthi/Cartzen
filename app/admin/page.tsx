@@ -22,7 +22,10 @@ import {
   Users,
   Package,
   Shield,
+  ClipboardCheck,
+  Store,
 } from "lucide-react";
+import type { SellerProduct, UserRole, FeeStatus } from "@/types";
 
 interface FSProduct {
   id: string;
@@ -59,9 +62,10 @@ export default function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
 
-  const [tab, setTab] = useState<"products" | "users">("products");
+  const [tab, setTab] = useState<"products" | "users" | "review">("products");
   const [products, setProducts] = useState<FSProduct[]>([]);
   const [users, setUsers] = useState<FSUser[]>([]);
+  const [listings, setListings] = useState<SellerProduct[]>([]);
   const [fetching, setFetching] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_PRODUCT);
@@ -79,13 +83,57 @@ export default function AdminPage() {
 
   async function fetchAll() {
     setFetching(true);
-    const [pSnap, uSnap] = await Promise.all([
+    const [pSnap, uSnap, lSnap] = await Promise.all([
       getDocs(query(collection(db, "products"), orderBy("createdAt", "desc"))),
       getDocs(collection(db, "users")),
+      getDocs(query(collection(db, "sellerProducts"), orderBy("submittedAt", "desc"))),
     ]);
     setProducts(pSnap.docs.map((d) => ({ id: d.id, ...d.data() } as FSProduct)));
     setUsers(uSnap.docs.map((d) => ({ id: d.id, ...d.data() } as FSUser)));
+    setListings(lSnap.docs.map((d) => ({ id: d.id, ...d.data() } as SellerProduct)));
     setFetching(false);
+  }
+
+  // ─── Seller listing review ──────────────────────────────────────────────────
+
+  async function approveListing(l: SellerProduct) {
+    // Publish a copy into the live catalogue, then mark the listing approved
+    const pub = await addDoc(collection(db, "products"), {
+      name: l.name,
+      brand: l.brand,
+      price: l.price,
+      category: l.category,
+      image: l.image,
+      description: l.description,
+      inStock: true,
+      sellerId: l.sellerId,
+      storeName: l.storeName,
+      createdAt: new Date().toISOString(),
+    });
+    await updateDoc(doc(db, "sellerProducts", l.id), {
+      status: "approved",
+      reviewedAt: new Date().toISOString(),
+      publishedProductId: pub.id,
+    });
+    await fetchAll();
+  }
+
+  async function rejectListing(l: SellerProduct) {
+    const reason = prompt(`Why is "${l.name}" being rejected? (shown to the seller)`);
+    if (reason === null) return;
+    await updateDoc(doc(db, "sellerProducts", l.id), {
+      status: "rejected",
+      reviewedAt: new Date().toISOString(),
+      rejectionReason: reason || "Doesn't meet listing guidelines",
+    });
+    setListings((prev) =>
+      prev.map((x) => (x.id === l.id ? { ...x, status: "rejected", rejectionReason: reason || "" } : x))
+    );
+  }
+
+  async function setListingFee(l: SellerProduct, feeStatus: FeeStatus) {
+    await updateDoc(doc(db, "sellerProducts", l.id), { feeStatus });
+    setListings((prev) => prev.map((x) => (x.id === l.id ? { ...x, feeStatus } : x)));
   }
 
   function startEdit(p: FSProduct) {
@@ -117,8 +165,7 @@ export default function AdminPage() {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
-  async function toggleRole(u: FSUser) {
-    const newRole = u.role === "admin" ? "user" : "admin";
+  async function setRole(u: FSUser, newRole: UserRole) {
     await updateDoc(doc(db, "users", u.id), { role: newRole });
     setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, role: newRole } : x)));
   }
@@ -157,6 +204,21 @@ export default function AdminPage() {
           }`}
         >
           <Package className="w-4 h-4" /> Products ({products.length})
+        </button>
+        <button
+          onClick={() => setTab("review")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === "review"
+              ? "zen-gradient text-white"
+              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+          }`}
+        >
+          <ClipboardCheck className="w-4 h-4" /> Review
+          {listings.filter((l) => l.status === "pending_review").length > 0 && (
+            <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center">
+              {listings.filter((l) => l.status === "pending_review").length}
+            </span>
+          )}
         </button>
         <button
           onClick={() => setTab("users")}
@@ -362,6 +424,115 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Review Tab */}
+      {tab === "review" && (
+        <div>
+          <h2 className="font-semibold text-lg mb-1">Seller listings</h2>
+          <p className="text-xs text-gray-400 mb-4">
+            Approve to publish into the live catalogue. Fees are tracked per approved listing.
+          </p>
+          {listings.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <Store className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No seller listings yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {[...listings]
+                .sort((a, b) => (a.status === "pending_review" ? -1 : 1) - (b.status === "pending_review" ? -1 : 1))
+                .map((l) => (
+                  <div key={l.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      {l.image && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={l.image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100 dark:bg-gray-800" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-sm">{l.name}</p>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                              l.status === "pending_review"
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+                                : l.status === "approved"
+                                ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                : "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400"
+                            }`}
+                          >
+                            {l.status === "pending_review" ? "Pending" : l.status === "approved" ? "Approved" : "Rejected"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {l.brand} · ₹{l.price?.toLocaleString()} · {l.category}
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          {l.storeName || "—"} ({l.sellerEmail}) · submitted{" "}
+                          {l.submittedAt ? new Date(l.submittedAt).toLocaleDateString() : "—"}
+                        </p>
+                        {l.description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{l.description}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        {l.status === "pending_review" && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => approveListing(l)}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Approve
+                            </button>
+                            <button
+                              onClick={() => rejectListing(l)}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950"
+                            >
+                              <X className="w-3.5 h-3.5" /> Reject
+                            </button>
+                          </div>
+                        )}
+                        {l.status === "approved" && (
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                                l.feeStatus === "paid"
+                                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                  : l.feeStatus === "waived"
+                                  ? "bg-gray-100 text-gray-500 dark:bg-gray-800"
+                                  : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+                              }`}
+                            >
+                              ₹{l.listingFee} {l.feeStatus}
+                            </span>
+                            {l.feeStatus === "unpaid" && (
+                              <>
+                                <button
+                                  onClick={() => setListingFee(l, "paid")}
+                                  className="text-[11px] px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                  Mark paid
+                                </button>
+                                <button
+                                  onClick={() => setListingFee(l, "waived")}
+                                  className="text-[11px] px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                  Waive
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {l.status === "rejected" && l.rejectionReason && (
+                          <p className="text-[11px] text-rose-500 max-w-[200px]">"{l.rejectionReason}"</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Users Tab */}
       {tab === "users" && (
         <div>
@@ -391,7 +562,7 @@ export default function AdminPage() {
                         <td className="px-4 py-3 font-medium">{u.name}</td>
                         <td className="px-4 py-3 text-gray-500">{u.email}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : u.role === "seller" ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
                             {u.role}
                           </span>
                         </td>
@@ -400,12 +571,15 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           {u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                            <button
-                              onClick={() => toggleRole(u)}
-                              className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            <select
+                              value={u.role}
+                              onChange={(e) => setRole(u, e.target.value as UserRole)}
+                              className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
                             >
-                              Make {u.role === "admin" ? "User" : "Admin"}
-                            </button>
+                              <option value="user">user</option>
+                              <option value="seller">seller</option>
+                              <option value="admin">admin</option>
+                            </select>
                           )}
                         </td>
                       </tr>
@@ -423,7 +597,7 @@ export default function AdminPage() {
                         <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{u.name}</p>
                         <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${u.role === "admin" ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" : u.role === "seller" ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"}`}>
                         {u.role}
                       </span>
                     </div>
@@ -432,12 +606,15 @@ export default function AdminPage() {
                         Joined {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
                       </p>
                       {u.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
-                        <button
-                          onClick={() => toggleRole(u)}
-                          className="text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        <select
+                          value={u.role}
+                          onChange={(e) => setRole(u, e.target.value as UserRole)}
+                          className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
                         >
-                          Make {u.role === "admin" ? "User" : "Admin"}
-                        </button>
+                          <option value="user">user</option>
+                          <option value="seller">seller</option>
+                          <option value="admin">admin</option>
+                        </select>
                       )}
                     </div>
                   </div>

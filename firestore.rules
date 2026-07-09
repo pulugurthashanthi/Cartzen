@@ -2,26 +2,54 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email == "shanthi87p@gmail.com";
+    }
+
     // Products: anyone can read, only admin can write
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null &&
-        request.auth.token.email == "shanthi87p@gmail.com";
+      allow write: if isAdmin();
     }
 
     // Users: each user owns their document and their data subcollection
     match /users/{userId} {
       allow read: if request.auth != null &&
-        (request.auth.uid == userId ||
-         request.auth.token.email == "shanthi87p@gmail.com");
+        (request.auth.uid == userId || isAdmin());
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null &&
-        request.auth.token.email == "shanthi87p@gmail.com";
+      // Users may update their own doc but not change their role —
+      // except the one allowed self-upgrade: user -> seller.
+      allow update: if isAdmin() ||
+        (request.auth != null && request.auth.uid == userId &&
+          (request.resource.data.role == resource.data.role ||
+           (resource.data.role == "user" && request.resource.data.role == "seller")));
 
       // CartZen data subcollection — only the owner can read/write
       match /data/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+    }
+
+    // Seller listings: sellers submit and manage their own; admin reviews.
+    // Approved listings are publicly readable.
+    match /sellerProducts/{listingId} {
+      allow read: if resource.data.status == "approved" ||
+        isAdmin() ||
+        (request.auth != null && request.auth.uid == resource.data.sellerId);
+      allow create: if request.auth != null &&
+        request.resource.data.sellerId == request.auth.uid &&
+        request.resource.data.status == "pending_review";
+      // Sellers can edit until approval; edits go back to review and cannot
+      // touch ownership or fee bookkeeping. Admin can update anything.
+      allow update: if isAdmin() ||
+        (request.auth != null && request.auth.uid == resource.data.sellerId &&
+          resource.data.status != "approved" &&
+          request.resource.data.sellerId == resource.data.sellerId &&
+          request.resource.data.status == "pending_review" &&
+          request.resource.data.feeStatus == resource.data.feeStatus);
+      allow delete: if isAdmin() ||
+        (request.auth != null && request.auth.uid == resource.data.sellerId);
     }
   }
 }

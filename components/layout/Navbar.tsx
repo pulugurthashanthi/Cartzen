@@ -22,6 +22,7 @@ import {
   Gift,
   ShoppingBag,
   User,
+  Store,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCart } from "@/contexts/CartContext";
@@ -42,6 +43,7 @@ const navLinks = [
   { href: "/dream-vault", label: "Dream Vault", icon: Sparkles },
   { href: "/cooling-off", label: "Cooling-Off", icon: Snowflake },
   { href: "/journal", label: "Journal", icon: BookOpen },
+  { href: "/sell", label: "Sell", icon: Store },
 ];
 
 // Desktop nav is trimmed — Rewards stays reachable via the coin badge,
