@@ -12,6 +12,22 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#3b82f6",
     orientation: "portrait",
     categories: ["shopping", "lifestyle", "finance"],
+    shortcuts: [
+      {
+        name: "I have an urge",
+        short_name: "Urge",
+        description: "Catch a buying impulse before it becomes a purchase",
+        url: "/urge",
+        icons: [{ src: "/icon-192.png", sizes: "192x192" }],
+      },
+      {
+        name: "Import a product link",
+        short_name: "Import",
+        description: "Paste a store link and fake-buy it",
+        url: "/import",
+        icons: [{ src: "/icon-192.png", sizes: "192x192" }],
+      },
+    ],
     icons: [
       {
         src: "/icon.svg",

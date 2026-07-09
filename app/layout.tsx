@@ -6,6 +6,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ToastContainer } from "@/components/ui/Toast";
 import { PWARegister } from "@/components/PWARegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { UrgeButton } from "@/components/UrgeButton";
 import { SyncProvider } from "@/components/SyncProvider";
 import { EngagementBootstrap } from "@/components/engagement/EngagementBootstrap";
 import { CelebrationManager } from "@/components/celebrations/CelebrationManager";
@@ -50,6 +51,7 @@ export default function RootLayout({
             <ToastContainer />
             <PWARegister />
             <InstallPrompt />
+            <UrgeButton />
             <SyncProvider />
             <EngagementBootstrap />
             <CelebrationManager />
