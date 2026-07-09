@@ -1,7 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronRight, Check, Link2 } from "lucide-react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -58,11 +57,16 @@ export function ProductGrid() {
   const [visibleCount, setVisibleCount] = useState(12);
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
-  const searchParams = useSearchParams();
 
+  // Read ?sort=discount from the URL directly instead of useSearchParams():
+  // that hook forces a Suspense boundary around the grid, and React 19 reveals
+  // streamed boundaries inside requestAnimationFrame — which never fires in a
+  // hidden/background tab, leaving the whole grid invisible until refocus.
   useEffect(() => {
-    if (searchParams.get("sort") === "discount") setSortBy("discount");
-  }, [searchParams]);
+    if (new URLSearchParams(window.location.search).get("sort") === "discount") {
+      setSortBy("discount");
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchFirestore() {

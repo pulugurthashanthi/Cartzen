@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { Hero } from "@/components/product/Hero";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { RecentlyViewedRow } from "@/components/product/RecentlyViewedRow";
@@ -11,9 +10,7 @@ export default function HomePage() {
     <>
       <Hero />
       {/* Products first — personalization rows follow the grid */}
-      <Suspense fallback={null}>
-        <ProductGrid />
-      </Suspense>
+      <ProductGrid />
       <HomeDashboardRow />
       <DreamStrip />
       <RecommendedRow />
