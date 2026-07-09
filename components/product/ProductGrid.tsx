@@ -338,16 +338,6 @@ export function ProductGrid() {
               <span>{cat.icon}</span>
             )}
             {cat.name}
-            {cat.count > 0 && (
-              <span className={cn(
-                "text-xs font-semibold px-1.5 py-0.5 rounded-full",
-                activeCategory === cat.id
-                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-              )}>
-                {cat.count}
-              </span>
-            )}
           </button>
         ))}
         <button

@@ -48,9 +48,10 @@ export function Hero() {
           desktop, so search + categories + first products land on the
           first screen of every device. */}
       <div className="relative overflow-hidden rounded-3xl bg-blue-50 dark:bg-gray-900 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-        <div className="flex flex-row items-center justify-center gap-3 sm:gap-8 lg:gap-14 max-w-3xl mx-auto">
-          {/* Greeting + CTA */}
-          <div className="flex-1 min-w-0 lg:max-w-md py-1">
+        <div className="flex flex-row items-center justify-center gap-3 sm:gap-5 lg:gap-8 max-w-3xl mx-auto">
+          {/* Greeting + CTA — capped from sm up so it can't grow wide and
+              stretch out the visual gap to the basket at in-between widths. */}
+          <div className="flex-1 min-w-0 sm:max-w-[340px] lg:max-w-md py-1">
             <p className="text-blue-600 dark:text-blue-400 font-semibold text-xs sm:text-sm mb-0.5">
               {timeGreeting()}, {firstName} 👋
             </p>
