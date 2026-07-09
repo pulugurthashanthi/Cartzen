@@ -42,6 +42,15 @@ export function useWishlist() {
     persist(wishlistStorage.get().filter((i) => i.productId !== productId));
   }, []);
 
+  // Maturation check: "still want it" resets the item's clock.
+  const markStillWanted = useCallback((productId: string) => {
+    persist(
+      wishlistStorage.get().map((i) =>
+        i.productId === productId ? { ...i, checkedAt: new Date().toISOString() } : i
+      )
+    );
+  }, []);
+
   const toggle = useCallback((product: Product) => {
     const current = wishlistStorage.get();
     if (current.some((i) => i.productId === product.id)) {
@@ -61,5 +70,5 @@ export function useWishlist() {
     [items]
   );
 
-  return { items, addItem, removeItem, toggle, isWishlisted };
+  return { items, addItem, removeItem, toggle, isWishlisted, markStillWanted };
 }

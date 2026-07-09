@@ -126,6 +126,21 @@ export const wishlistStorage = {
   set: (items: WishlistItem[]) => safeSet(KEYS.WISHLIST, items),
 };
 
+// Wishlist maturation: running tally of urges that faded on their own
+// ("lost interest" in the still-want-it check). Powers the honesty strip.
+const WISHLIST_FADES_KEY = "cartzen_wishlist_fades";
+export interface WishlistFades {
+  count: number;
+  total: number;
+}
+export const wishlistFadesStorage = {
+  get: (): WishlistFades => safeGet(WISHLIST_FADES_KEY, { count: 0, total: 0 }),
+  add: (amount: number) => {
+    const cur = wishlistFadesStorage.get();
+    safeSet(WISHLIST_FADES_KEY, { count: cur.count + 1, total: cur.total + amount });
+  },
+};
+
 // Recently viewed (array of product IDs, most recent first)
 export const recentlyViewedStorage = {
   get: (): string[] => safeGet(KEYS.RECENTLY_VIEWED, []),

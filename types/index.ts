@@ -92,6 +92,9 @@ export interface WishlistItem {
   productId: string;
   product: Product;
   addedAt: string;
+  // Last time the user confirmed "still want it" in the maturation check;
+  // absent until the first check comes due.
+  checkedAt?: string;
 }
 
 // Cooling-Off List

@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { BookOpen, TrendingUp, Heart, Info } from "lucide-react";
+import { BookOpen, Info } from "lucide-react";
 import { useJournal } from "@/hooks/useJournal";
-import { formatDate, cn } from "@/lib/utils";
+import { TriggersReport } from "@/components/journal/TriggersReport";
+import { formatDate } from "@/lib/utils";
 
 const REASON_LABELS: Record<string, { label: string; emoji: string; insight: string }> = {
   bored: {
@@ -84,21 +85,8 @@ export default function JournalPage() {
             </div>
           )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="card p-4 text-center">
-              <TrendingUp className="w-5 h-5 text-zen-500 mx-auto mb-1.5" />
-              <p className="font-bold text-xl">{total}</p>
-              <p className="text-xs text-gray-400">Shopping sessions</p>
-            </div>
-            <div className="card p-4 text-center">
-              <Heart className="w-5 h-5 text-rose-400 mx-auto mb-1.5" />
-              <p className="font-bold text-xl">
-                {Object.values(reasonCounts as Record<string, number>).reduce((a, b) => a + b, 0)}
-              </p>
-              <p className="text-xs text-gray-400">Urges tracked</p>
-            </div>
-          </div>
+          {/* Aggregated trigger insights (needs a few entries before it appears) */}
+          <TriggersReport entries={entries} />
 
           {/* Entries */}
           <div className="space-y-3">
