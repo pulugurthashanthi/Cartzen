@@ -154,6 +154,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 showToast(`"${product.name}" added to Cooling-Off ❄️`);
               }}
               disabled={inCooling}
+              aria-label={inCooling ? `${product.name} is in cooling-off` : `Add ${product.name} to cooling-off`}
               className={cn(
                 "p-2.5 rounded-xl transition-all duration-200 active:scale-95",
                 inCooling

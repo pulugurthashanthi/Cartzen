@@ -8,7 +8,7 @@ import { Store, Plus, Trash2, Pencil, Clock, CheckCircle2, XCircle, Loader2, X }
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { showToast } from "@/components/ui/Toast";
-import { LISTING_FEE_INR, FEE_STATUS_LABELS } from "@/lib/monetization";
+import { LISTING_FEE_INR, FEE_STATUS_LABELS, MAX_PRODUCT_PRICE } from "@/lib/monetization";
 import { formatPrice, cn } from "@/lib/utils";
 import type { SellerProduct, ListingStatus } from "@/types";
 
@@ -76,16 +76,21 @@ export default function SellerDashboardPage() {
     if (user && isSeller) fetchListings();
   }, [user, isSeller, fetchListings]);
 
-  const canSave = form.name.trim() && form.brand.trim() && form.price > 0;
+  const canSave =
+    form.name.trim().length >= 3 &&
+    form.brand.trim().length >= 2 &&
+    form.price > 0 &&
+    form.price <= MAX_PRODUCT_PRICE;
 
   const save = async () => {
     if (!user || !canSave) return;
     setSaving(true);
+    const payload = { ...form, name: form.name.trim(), brand: form.brand.trim() };
     try {
       if (editId) {
         // Edits put the listing back through review
         await updateDoc(doc(db, "sellerProducts", editId), {
-          ...form,
+          ...payload,
           status: "pending_review",
           rejectionReason: "",
           submittedAt: new Date().toISOString(),
@@ -93,7 +98,7 @@ export default function SellerDashboardPage() {
         showToast("Updated — back in the review queue", "info");
       } else {
         await addDoc(collection(db, "sellerProducts"), {
-          ...form,
+          ...payload,
           sellerId: user.uid,
           sellerEmail: user.email ?? "",
           storeName: storeName ?? "",
@@ -212,10 +217,15 @@ export default function SellerDashboardPage() {
               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-zen-500" />
             <input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Brand *"
               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-zen-500" />
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">₹</span>
-              <input type="number" min={1} value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} placeholder="Price *"
-                className="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-zen-500" />
+            <div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">₹</span>
+                <input type="number" min={1} max={MAX_PRODUCT_PRICE} value={form.price || ""} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} placeholder="Price *"
+                  className="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-zen-500" />
+              </div>
+              {form.price > MAX_PRODUCT_PRICE && (
+                <p className="text-[11px] text-rose-500 mt-1">Max price is {formatPrice(MAX_PRODUCT_PRICE)}</p>
+              )}
             </div>
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-zen-500">

@@ -132,6 +132,7 @@ export default function CartPage() {
                   <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                      aria-label={`Decrease quantity of ${item.product.name}`}
                       className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <Minus className="w-3 h-3" />
@@ -139,6 +140,7 @@ export default function CartPage() {
                     <span className="px-3 text-sm font-semibold">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      aria-label={`Increase quantity of ${item.product.name}`}
                       className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
@@ -160,6 +162,7 @@ export default function CartPage() {
 
               <button
                 onClick={() => removeItem(item.productId)}
+                aria-label={`Remove ${item.product.name} from cart`}
                 className="p-2 h-fit rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -223,7 +226,11 @@ export default function CartPage() {
                     </p>
                     <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">{appliedCoupon.message}</p>
                   </div>
-                  <button onClick={() => setAppliedCoupon(null)} className="text-green-500 hover:text-green-700">
+                  <button
+                    onClick={() => setAppliedCoupon(null)}
+                    aria-label="Remove coupon"
+                    className="text-green-500 hover:text-green-700"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>

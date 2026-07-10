@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRewards } from "@/hooks/useRewards";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,17 @@ export function Hero() {
   const [activeBox, setActiveBox] = useState<{ drop: RewardDrop; title: string } | null>(null);
   const skin = boxSkinGradient(r.store.activeBoxSkin);
   const firstName = user?.displayName?.split(" ")[0] ?? "there";
+
+  // "Good morning/afternoon/evening" depends on the clock, which reads
+  // differently on the server (SSR, often UTC) than in the browser (local
+  // TZ) — computing it during render caused a hydration mismatch (React
+  // error #418). A fixed value on first render (server + client's initial
+  // paint match exactly), then a post-mount effect swaps in the real
+  // greeting; that update happens after hydration, so it's always safe.
+  const [greeting, setGreeting] = useState("Hello");
+  useEffect(() => {
+    setGreeting(timeGreeting());
+  }, []);
 
   const handleDaily = () => {
     const drop = r.claimDailyBox();
@@ -53,7 +64,7 @@ export function Hero() {
               stretch out the visual gap to the basket at in-between widths. */}
           <div className="flex-1 min-w-0 sm:max-w-[340px] lg:max-w-md py-1">
             <p className="text-blue-600 dark:text-blue-400 font-semibold text-xs sm:text-sm mb-0.5">
-              {timeGreeting()}, {firstName} 👋
+              {greeting}, {firstName} 👋
             </p>
             {/* leading-tight must sit on each span: the font-size utilities
                 carry their own line-height, which beats an inherited one. */}

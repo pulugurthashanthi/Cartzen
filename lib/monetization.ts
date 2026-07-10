@@ -11,3 +11,8 @@ export const FEE_STATUS_LABELS: Record<string, string> = {
   paid: "Fee paid",
   waived: "Fee waived",
 };
+
+// Shared sanity bound for any product entering the catalog (admin-added or
+// seller-submitted) — high enough for real premium goods, low enough to
+// catch fat-fingered entries like ₹1,55,55,555.
+export const MAX_PRODUCT_PRICE = 10_00_000;

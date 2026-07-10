@@ -411,11 +411,13 @@ export default function ProductPage() {
             <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity"
                 className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg font-medium"
               >−</button>
               <span className="px-4 py-2 font-semibold min-w-[3rem] text-center">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => Math.min(stockCount, q + 1))}
+                aria-label="Increase quantity"
                 className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-lg font-medium"
               >+</button>
             </div>

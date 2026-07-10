@@ -27,6 +27,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { MAX_PRODUCT_PRICE } from "@/lib/monetization";
 import type { SellerProduct, UserRole, FeeStatus } from "@/types";
 
 interface FSProduct {
@@ -185,13 +186,25 @@ export default function AdminPage() {
     setShowForm(true);
   }
 
+  const productValidationError = (() => {
+    const name = form.name.trim();
+    const brand = form.brand.trim();
+    if (name.length < 3) return "Name needs at least 3 characters";
+    if (brand.length < 2) return "Brand needs at least 2 characters";
+    if (!(form.price > 0)) return "Price must be greater than ₹0";
+    if (form.price > MAX_PRODUCT_PRICE) return `Price looks like a typo — over ${formatPrice(MAX_PRODUCT_PRICE)}`;
+    return null;
+  })();
+
   async function saveProduct() {
+    if (productValidationError) return;
     setSaving(true);
     try {
+      const payload = { ...form, name: form.name.trim(), brand: form.brand.trim() };
       if (editId) {
-        await updateDoc(doc(db, "products", editId), { ...form, updatedAt: new Date().toISOString() });
+        await updateDoc(doc(db, "products", editId), { ...payload, updatedAt: new Date().toISOString() });
       } else {
-        await addDoc(collection(db, "products"), { ...form, createdAt: new Date().toISOString() });
+        await addDoc(collection(db, "products"), { ...payload, createdAt: new Date().toISOString() });
       }
       setShowForm(false);
       setForm(EMPTY_PRODUCT);
@@ -361,10 +374,10 @@ export default function AdminPage() {
                   <label htmlFor="inStock" className="text-sm">In Stock</label>
                 </div>
               </div>
-              <div className="flex gap-3 mt-5">
+              <div className="flex items-center gap-3 mt-5">
                 <button
                   onClick={saveProduct}
-                  disabled={saving || !form.name || !form.brand}
+                  disabled={saving || !!productValidationError}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg zen-gradient text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" /> {saving ? "Saving…" : "Save"}
@@ -375,6 +388,9 @@ export default function AdminPage() {
                 >
                   <X className="w-4 h-4" /> Cancel
                 </button>
+                {productValidationError && (form.name || form.brand || form.price > 0) && (
+                  <p className="text-xs text-rose-500">{productValidationError}</p>
+                )}
               </div>
             </div>
           )}
