@@ -16,8 +16,8 @@ const REASONS: { value: ShoppingReason; label: string; emoji: string; descriptio
   { value: "bored", label: "Boredom", emoji: "😴", description: "The classic. Truly iconic." },
   { value: "stressed", label: "Stress Shopping", emoji: "😰", description: "Retail therapy, but make it free" },
   { value: "rewarding_myself", label: "Treating Myself", emoji: "🎁", description: "Queen/King behaviour, honestly" },
-  { value: "need_product", label: "I Actually Need It", emoji: "✅", description: "Suuure you do. (We believe you.)" },
-  { value: "just_browsing", label: "Just Browsing", emoji: "👀", description: "Narrator: they were not just browsing" },
+  { value: "need_product", label: "I Actually Need It", emoji: "✅", description: "If it's real, it'll survive a cool-off." },
+  { value: "just_browsing", label: "Just Browsing", emoji: "👀", description: "Curiosity's healthy — buying on it isn't." },
 ];
 
 const STATES = [

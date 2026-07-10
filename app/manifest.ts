@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Fake Basket — Shop Without Spending",
+    name: "Fake Basket — Beat impulse shopping",
     short_name: "Fake Basket",
     description:
-      "Satisfy your shopping urge mindfully. Fill a cart, feel the dopamine, spend ₹0.",
+      "Simulate the purchase, cool off, and keep the money you didn't spend.",
     start_url: "/",
     display: "standalone",
     background_color: "#f8fafc",

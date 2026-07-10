@@ -76,7 +76,7 @@ export function Hero() {
             {/* Sub-copy is a nice-to-have — desktop only; on phones and
                 tablets vertical space is the scarcest resource. */}
             <p className="hidden lg:block text-sm text-gray-500 dark:text-gray-400 mb-3 max-w-sm">
-              Shop, collect joy and save mindfully.
+              Simulate the purchase, cool off, and keep the money you didn&apos;t spend.
             </p>
             <button
               onClick={handleDaily}

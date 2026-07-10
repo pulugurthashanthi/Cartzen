@@ -94,7 +94,7 @@ export default function CartPage() {
             Your (Very Real) Imaginary Cart
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            {items.length} item{items.length !== 1 ? "s" : ""} · Total damage to your wallet: ₹0
+            {items.length} item{items.length !== 1 ? "s" : ""} · Real money spent: ₹0
           </p>
         </div>
         <button
@@ -295,8 +295,8 @@ export default function CartPage() {
 
             <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
               <p className="text-xs text-amber-800 dark:text-amber-400 font-medium leading-relaxed">
-                ⚠️ <span className="font-bold">Warning:</span> You are about to "spend" {formatPrice(total)}.
-                In real life, this would hurt. Here, it does not. Proceed with reckless financial abandon.
+                ✨ You&apos;re about to &ldquo;buy&rdquo; {formatPrice(total)}{" "}worth — and keep every rupee of it.
+                Feel the thrill; your balance won&apos;t notice a thing.
               </p>
             </div>
 
