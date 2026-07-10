@@ -25,6 +25,8 @@ import {
   ClipboardCheck,
   Store,
   IndianRupee,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { MAX_PRODUCT_PRICE } from "@/lib/monetization";
@@ -216,9 +218,18 @@ export default function AdminPage() {
   }
 
   async function deleteProduct(id: string) {
-    if (!confirm("Delete this product?")) return;
+    if (!confirm("Delete this product? This can't be undone.")) return;
     await deleteDoc(doc(db, "products", id));
     setProducts((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  // Soft delete: take a product off the storefront without losing the
+  // record (reviews, order history, seller attribution). Same pattern as
+  // a seller delisting their own listing — just flips inStock.
+  async function toggleStock(p: FSProduct) {
+    const inStock = !p.inStock;
+    await updateDoc(doc(db, "products", p.id), { inStock });
+    setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, inStock } : x)));
   }
 
   async function setRole(u: FSUser, newRole: UserRole) {
@@ -434,10 +445,18 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2 justify-end">
-                            <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                            <button
+                              onClick={() => toggleStock(p)}
+                              aria-label={p.inStock ? `Take ${p.name} off sale` : `Restore ${p.name} to sale`}
+                              title={p.inStock ? "Take off sale" : "Restore to sale"}
+                              className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950 text-gray-500 hover:text-amber-600"
+                            >
+                              {p.inStock ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                            <button onClick={() => startEdit(p)} aria-label={`Edit ${p.name}`} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => deleteProduct(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
+                            <button onClick={() => deleteProduct(p.id)} aria-label={`Delete ${p.name}`} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -458,10 +477,17 @@ export default function AdminPage() {
                         <p className="text-xs text-gray-500 mt-0.5">{p.brand}</p>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <button onClick={() => startEdit(p)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+                        <button
+                          onClick={() => toggleStock(p)}
+                          aria-label={p.inStock ? `Take ${p.name} off sale` : `Restore ${p.name} to sale`}
+                          className="p-2 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950 text-gray-500 hover:text-amber-600"
+                        >
+                          {p.inStock ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                        <button onClick={() => startEdit(p)} aria-label={`Edit ${p.name}`} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => deleteProduct(p.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
+                        <button onClick={() => deleteProduct(p.id)} aria-label={`Delete ${p.name}`} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
