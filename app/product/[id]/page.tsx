@@ -282,6 +282,8 @@ export default function ProductPage() {
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
+                  aria-label={`View image ${i + 1} of ${product.name}`}
+                  aria-pressed={activeImage === i}
                   className={cn(
                     "relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all",
                     activeImage === i ? "border-zen-500" : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
@@ -529,6 +531,7 @@ export default function ProductPage() {
                   inputMode="numeric"
                   maxLength={6}
                   placeholder="Enter pincode"
+                  aria-label="Enter delivery pincode"
                   value={pincode}
                   onChange={(e) => { setPincode(e.target.value.replace(/\D/, "")); setDeliveryResult(null); }}
                   className="input pl-9 text-sm py-2"

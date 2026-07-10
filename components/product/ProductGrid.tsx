@@ -407,19 +407,15 @@ export function ProductGrid() {
           <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100">
             {search ? `Results for "${search}"` : activeCategory === "all" ? "Featured for you" : categories.find((c) => c.id === activeCategory)?.name}
           </h2>
-          {/* aria-live announces the count once it's known/changes; the loading
-              skeleton needs its own accessible text or it's an empty node to
-              assistive tech even though it's visibly a pulsing placeholder. */}
+          {/* Real text at every stage, never a decoratively-labelled empty
+              node: an aria-label on a bare skeleton span sets that span's
+              own accessible name, but tools reading the paragraph's text
+              content (rather than descending into a nested widget's name)
+              still see it as blank — which is exactly what "the count
+              paragraph is empty" was catching. aria-live announces the
+              swap from "Loading…" to the real count once it resolves. */}
           <p className="text-xs text-gray-400 mt-0.5" aria-live="polite">
-            {firestoreLoaded ? (
-              `${filtered.length} product${filtered.length !== 1 ? "s" : ""}`
-            ) : (
-              <span
-                role="status"
-                aria-label="Loading product count"
-                className="inline-block h-3 w-16 rounded bg-gray-200 dark:bg-gray-700 animate-pulse align-middle"
-              />
-            )}
+            {firestoreLoaded ? `${filtered.length} product${filtered.length !== 1 ? "s" : ""}` : "Loading products…"}
           </p>
         </div>
         <select

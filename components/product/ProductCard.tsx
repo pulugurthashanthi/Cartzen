@@ -74,7 +74,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             const added = toggleWishlist(product);
             showToast(added ? `❤️ Saved "${product.name}" to wishlist` : `Removed from wishlist`);
           }}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
           className={cn(
             "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 active:scale-90",
             wishlisted
@@ -146,30 +146,30 @@ export function ProductCard({ product, className }: ProductCardProps) {
             <ShoppingCart className="w-3.5 h-3.5" />
             {outOfStock ? "Out of Stock" : inCart ? "Go to Cart" : "Add to Cart"}
           </button>
-          <div className="relative group/cool">
-            <button
-              onClick={() => {
-                if (inCooling) return;
-                addToCooling(product);
-                showToast(`"${product.name}" added to Cooling-Off ❄️`);
-              }}
-              disabled={inCooling}
-              aria-label={inCooling ? `${product.name} is in cooling-off` : `Add ${product.name} to cooling-off`}
-              className={cn(
-                "p-2.5 rounded-xl transition-all duration-200 active:scale-95",
-                inCooling
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500 cursor-default"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-500 hover:scale-110"
-              )}
-            >
-              {inCooling ? <Check className="w-3.5 h-3.5" /> : <Snowflake className="w-3.5 h-3.5" />}
-            </button>
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs whitespace-nowrap opacity-0 group-hover/cool:opacity-100 transition-opacity pointer-events-none">
-              {inCooling ? "In Cooling-Off list" : "Add to Cooling-Off"}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100" />
-            </div>
-          </div>
+          {/* Native title tooltip instead of a custom absolutely-positioned one:
+              the aria-label already covers accessibility, and a hand-built
+              tooltip wide enough for "Add to Cooling-Off" centred on a small
+              icon button reliably overflowed narrow cards' scrollWidth even
+              while invisible (opacity doesn't remove layout box). title has
+              zero layout footprint — it's an OS-level overlay, not a DOM node. */}
+          <button
+            onClick={() => {
+              if (inCooling) return;
+              addToCooling(product);
+              showToast(`"${product.name}" added to Cooling-Off ❄️`);
+            }}
+            disabled={inCooling}
+            aria-label={inCooling ? `${product.name} is in cooling-off` : `Add ${product.name} to cooling-off`}
+            title={inCooling ? "In Cooling-Off list" : "Add to Cooling-Off"}
+            className={cn(
+              "p-2.5 rounded-xl transition-all duration-200 active:scale-95",
+              inCooling
+                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-500 cursor-default"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-500 hover:scale-110"
+            )}
+          >
+            {inCooling ? <Check className="w-3.5 h-3.5" /> : <Snowflake className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
     </div>
