@@ -57,12 +57,6 @@ export function ProductGrid() {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
   const [firestoreProducts, setFirestoreProducts] = useState<Product[]>([]);
-  // Gates the visible "N products" count: without this, the number renders
-  // once with the static-only total, then jumps as soon as the async
-  // Firestore fetch resolves and merges in — the "70 -> 73" flicker. Holding
-  // the real count back until the fetch settles means it's shown exactly
-  // once, correctly, instead of visibly changing under the user.
-  const [firestoreLoaded, setFirestoreLoaded] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
   // Responsive placeholder — the long copy truncated mid-word on phones
@@ -103,8 +97,6 @@ export function ProductGrid() {
         setFirestoreProducts(docs);
       } catch {
         // static only
-      } finally {
-        setFirestoreLoaded(true);
       }
     }
     fetchFirestore();
@@ -442,15 +434,17 @@ export function ProductGrid() {
           <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100">
             {search ? `Results for "${search}"` : activeCategory === "all" ? "Featured for you" : categories.find((c) => c.id === activeCategory)?.name}
           </h2>
-          {/* Real text at every stage, never a decoratively-labelled empty
-              node: an aria-label on a bare skeleton span sets that span's
-              own accessible name, but tools reading the paragraph's text
-              content (rather than descending into a nested widget's name)
-              still see it as blank — which is exactly what "the count
-              paragraph is empty" was catching. aria-live announces the
-              swap from "Loading…" to the real count once it resolves. */}
+          {/* Always the live count derived from the same `filtered` array the
+              grid itself renders from — never gated behind a separate
+              "loaded" flag. The grid shows static products immediately
+              (before the Firestore merge completes), so a gated count text
+              guaranteed a real, often multi-second window of a fully
+              populated grid captioned "Loading products…", which read as
+              the page being stuck. A number that briefly increases when
+              Firestore data merges in is far less broken-looking than text
+              that denies the page has loaded while it plainly has. */}
           <p className="text-xs text-gray-400 mt-0.5" aria-live="polite">
-            {firestoreLoaded ? `${filtered.length} product${filtered.length !== 1 ? "s" : ""}` : "Loading products…"}
+            {filtered.length} product{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
         <select

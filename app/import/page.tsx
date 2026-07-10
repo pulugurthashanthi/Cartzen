@@ -130,6 +130,7 @@ export default function ImportPage() {
               id="import-url"
               type="url"
               inputMode="url"
+              aria-label="Product link"
               placeholder="https://www.amazon.in/..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}

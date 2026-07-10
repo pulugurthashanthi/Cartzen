@@ -110,7 +110,11 @@ export default function CartPage() {
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
             <div key={item.productId} className="card p-4 flex gap-4 animate-fade-in">
-              <Link href={`/product/${item.product.id}`} className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
+              <Link
+                href={`/product/${item.product.id}`}
+                aria-label={`View ${item.product.name}`}
+                className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800"
+              >
                 <Image
                   src={item.product.image}
                   alt={item.product.name}
@@ -182,13 +186,18 @@ export default function CartPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {suggestions.map((p) => (
                   <div key={p.id} className="group">
-                    <Link href={`/product/${p.id}`} className="block relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 mb-2">
+                    <Link
+                      href={`/product/${p.id}`}
+                      aria-label={`View ${p.name}`}
+                      className="block relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 mb-2"
+                    >
                       <Image src={p.image} alt={p.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="150px" />
                     </Link>
                     <p className="text-xs font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{p.name}</p>
                     <p className="text-xs font-bold mb-2">{formatPrice(p.price)}</p>
                     <button
                       onClick={() => { addItem(p); showToast(`Added "${p.name}" 🛒`); }}
+                      aria-label={`Add ${p.name} to cart`}
                       className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold bg-zen-50 dark:bg-zen-950/40 text-zen-700 dark:text-zen-400 hover:bg-zen-100 dark:hover:bg-zen-900/50 transition-colors"
                     >
                       <PlusCircle className="w-3.5 h-3.5" />
@@ -242,6 +251,7 @@ export default function CartPage() {
                       <input
                         type="text"
                         placeholder="Coupon code"
+                        aria-label="Coupon code"
                         value={couponInput}
                         onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
                         onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
