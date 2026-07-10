@@ -52,6 +52,7 @@ export function ProductGrid() {
   const [sortBy, setSortBy] = useState<"relevance" | "price_asc" | "price_desc" | "rating" | "discount">("relevance");
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [minDiscount, setMinDiscount] = useState<number | null>(null);
+  const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
@@ -165,27 +166,37 @@ export function ProductGrid() {
       list = list.filter((p) => (p.discount ?? 0) >= minDiscount);
     }
 
+    if (hideOutOfStock) list = list.filter((p) => p.inStock);
+
     if (sortBy === "price_asc") list.sort((a, b) => a.price - b.price);
     else if (sortBy === "price_desc") list.sort((a, b) => b.price - a.price);
     else if (sortBy === "rating") list.sort((a, b) => b.rating - a.rating);
     else if (sortBy === "discount") list.sort((a, b) => (b.discount ?? 0) - (a.discount ?? 0));
 
-    return list;
-  }, [allProducts, search, activeCategory, sortBy, priceRange, minDiscount]);
+    // Out-of-stock items sink to the end regardless of sort — Array.sort is
+    // stable, so this only demotes them and never disturbs ordering within
+    // either group. Applies even when hideOutOfStock is off, so a "Buy Now"
+    // card for something unbuyable never sits above ones a shopper can
+    // actually add to cart.
+    list.sort((a, b) => Number(b.inStock) - Number(a.inStock));
 
-  const activeFilterCount = (priceRange ? 1 : 0) + (minDiscount !== null ? 1 : 0);
+    return list;
+  }, [allProducts, search, activeCategory, sortBy, priceRange, minDiscount, hideOutOfStock]);
+
+  const activeFilterCount = (priceRange ? 1 : 0) + (minDiscount !== null ? 1 : 0) + (hideOutOfStock ? 1 : 0);
 
   const clearAll = useCallback(() => {
     setSearch("");
     setActiveCategory("all");
     setPriceRange(null);
     setMinDiscount(null);
+    setHideOutOfStock(false);
     setSortBy("relevance");
     setVisibleCount(12);
   }, []);
 
   // Reset visible count whenever filters/search/category change
-  useEffect(() => { setVisibleCount(12); }, [search, activeCategory, priceRange, minDiscount, sortBy]);
+  useEffect(() => { setVisibleCount(12); }, [search, activeCategory, priceRange, minDiscount, hideOutOfStock, sortBy]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8">
@@ -292,9 +303,25 @@ export function ProductGrid() {
                 </div>
               </div>
 
+              {/* Availability */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  Availability
+                </p>
+                <label className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/20 cursor-pointer">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Hide out of stock</span>
+                  <input
+                    type="checkbox"
+                    checked={hideOutOfStock}
+                    onChange={(e) => setHideOutOfStock(e.target.checked)}
+                    className="w-4 h-4 rounded accent-zen-500"
+                  />
+                </label>
+              </div>
+
               {activeFilterCount > 0 && (
                 <button
-                  onClick={() => { setPriceRange(null); setMinDiscount(null); }}
+                  onClick={() => { setPriceRange(null); setMinDiscount(null); setHideOutOfStock(false); }}
                   className="w-full text-sm text-center text-rose-500 hover:text-rose-600 font-medium py-1.5 transition-colors"
                 >
                   Clear filters
@@ -366,7 +393,7 @@ export function ProductGrid() {
       </div>
 
       {/* Active filter chips */}
-      {(priceRange || minDiscount !== null || search) && (
+      {(priceRange || minDiscount !== null || search || hideOutOfStock) && (
         <div className="flex flex-wrap gap-2 mb-5">
           {search && (
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
@@ -391,6 +418,14 @@ export function ProductGrid() {
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               🏷️ {minDiscount}%+ off
               <button onClick={() => setMinDiscount(null)} aria-label={`Remove ${minDiscount}%+ off filter`}>
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {hideOutOfStock && (
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
+              ✅ In stock only
+              <button onClick={() => setHideOutOfStock(false)} aria-label="Remove hide out of stock filter">
                 <X className="w-3 h-3" />
               </button>
             </span>
