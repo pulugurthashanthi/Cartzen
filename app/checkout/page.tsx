@@ -9,6 +9,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { useJournal } from "@/hooks/useJournal";
 import { useRewards } from "@/hooks/useRewards";
 import { formatPrice, cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import type { ShoppingReason } from "@/types";
 
 const REASONS: { value: ShoppingReason; label: string; emoji: string; description: string }[] = [
@@ -123,6 +124,13 @@ export default function CheckoutPage() {
     const journalEntry = addEntry(selectedReason, note || undefined);
     const deliveryAddress = `${address.fullName}, ${address.line1}, ${address.city}, ${address.state} - ${address.pincode} | ${address.phone}`;
     const order = placeOrder(items, journalEntry, deliveryAddress, coinDiscount);
+    // The core value moment: money that felt spent but wasn't. `total` is the
+    // basket value the user chose to "buy" and therefore didn't actually spend.
+    trackEvent({
+      name: "fake_order",
+      amount: total,
+      items: items.reduce((sum, i) => sum + i.quantity, 0),
+    });
     clearCart();
     router.push(`/checkout-success/${order.id}`);
   };

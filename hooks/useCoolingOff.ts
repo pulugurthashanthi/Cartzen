@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { coolingOffStorage } from "@/lib/storage";
 import { trackChallenge } from "@/lib/track";
+import { trackEvent } from "@/lib/analytics";
 import type { CoolingOffItem, Product, ShoppingReason } from "@/types";
 
 export function useCoolingOff() {
@@ -32,6 +33,7 @@ export function useCoolingOff() {
         return next;
       });
       trackChallenge("cooldown_add");
+      trackEvent({ name: "cooloff_added", days: coolOffDays });
     },
     []
   );
@@ -46,6 +48,14 @@ export function useCoolingOff() {
 
   const markChecked = useCallback(
     (productId: string, stillWanted: boolean, reflection?: string) => {
+      // Fire the event once, outside the state updater — updater callbacks
+      // run twice under React StrictMode and would double-log. Read from the
+      // persisted list so we don't depend on a possibly-stale closure.
+      const item = coolingOffStorage.get().find((i) => i.productId === productId);
+      const heldHours = item
+        ? Math.round((Date.now() - new Date(item.addedAt).getTime()) / 3_600_000)
+        : 0;
+      trackEvent({ name: "cooloff_resolved", stillWanted, heldHours });
       setItems((prev) => {
         const next = prev.map((i) =>
           i.productId === productId

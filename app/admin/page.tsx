@@ -10,6 +10,7 @@ import {
   updateDoc,
   orderBy,
   query,
+  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +28,7 @@ import {
   IndianRupee,
   Eye,
   EyeOff,
+  BarChart3,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { MAX_PRODUCT_PRICE } from "@/lib/monetization";
@@ -51,6 +53,21 @@ interface FSUser {
   createdAt: string;
 }
 
+interface FSEvent {
+  id: string;
+  name: string;
+  uid?: string;
+  anon?: boolean;
+  amount?: number;
+  items?: number;
+  outcome?: string;
+  reason?: string;
+  stillWanted?: boolean;
+  heldHours?: number;
+  waitedDays?: number;
+  ts?: { seconds: number } | null;
+}
+
 const EMPTY_PRODUCT: Omit<FSProduct, "id"> = {
   name: "",
   brand: "",
@@ -67,10 +84,11 @@ export default function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
 
-  const [tab, setTab] = useState<"products" | "users" | "review">("products");
+  const [tab, setTab] = useState<"products" | "users" | "review" | "metrics">("products");
   const [products, setProducts] = useState<FSProduct[]>([]);
   const [users, setUsers] = useState<FSUser[]>([]);
   const [listings, setListings] = useState<SellerProduct[]>([]);
+  const [events, setEvents] = useState<FSEvent[]>([]);
   const [fetching, setFetching] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_PRODUCT);
@@ -110,6 +128,65 @@ export default function AdminPage() {
     return [...map.values()].sort((a, b) => b.feesDue - a.feesDue);
   }, [listings, users]);
 
+  // The behavior-change funnel — the numbers that answer "do users actually
+  // spend less and come back". Computed from the raw event log.
+  const metrics = useMemo(() => {
+    const of = (name: string) => events.filter((e) => e.name === name);
+    const uniqueUsers = (list: FSEvent[]) => new Set(list.map((e) => e.uid).filter(Boolean)).size;
+    const tsMs = (e: FSEvent) => (e.ts?.seconds ?? 0) * 1000;
+
+    const urgeStarted = of("urge_started");
+    const urgeResolved = of("urge_resolved");
+    const fakeOrders = of("fake_order");
+    const cooloffAdded = of("cooloff_added");
+    const cooloffResolved = of("cooloff_resolved");
+    const wishFaded = of("wish_faded");
+
+    // WAU — unique users with any event in the trailing 7 days
+    const weekAgo = Date.now() - 7 * 86_400_000;
+    const wau = new Set(events.filter((e) => tsMs(e) >= weekAgo).map((e) => e.uid).filter(Boolean)).size;
+
+    // Repeat urge check-ins — users who came back for a second urge
+    const urgeCounts = new Map<string, number>();
+    urgeStarted.forEach((e) => e.uid && urgeCounts.set(e.uid, (urgeCounts.get(e.uid) ?? 0) + 1));
+    const repeatUrgeUsers = [...urgeCounts.values()].filter((c) => c > 1).length;
+
+    const fakeOrderUsers = uniqueUsers(fakeOrders);
+    const surfed = urgeResolved.filter((e) => e.outcome === "surfed").length;
+    const vanished = cooloffResolved.filter((e) => e.stillWanted === false).length;
+
+    const simulatedSpend = fakeOrders.reduce((s, e) => s + (e.amount ?? 0), 0);
+    const fadeSavings = wishFaded.reduce((s, e) => s + (e.amount ?? 0), 0);
+
+    return {
+      totalUsers: uniqueUsers(events),
+      wau,
+      totalEvents: events.length,
+      // Money not spent
+      simulatedSpend,
+      fadeSavings,
+      totalSaved: simulatedSpend + fadeSavings,
+      // Fake orders
+      fakeOrders: fakeOrders.length,
+      fakeOrdersPerUser: fakeOrderUsers ? fakeOrders.length / fakeOrderUsers : 0,
+      // Urge funnel
+      urgeStarted: urgeStarted.length,
+      urgeResolved: urgeResolved.length,
+      urgeCompletionRate: urgeStarted.length ? Math.round((urgeResolved.length / urgeStarted.length) * 100) : 0,
+      surfed,
+      surfRate: urgeResolved.length ? Math.round((surfed / urgeResolved.length) * 100) : 0,
+      repeatUrgeUsers,
+      // Cooling-off
+      cooloffAdded: cooloffAdded.length,
+      cooloffResolved: cooloffResolved.length,
+      cooloffCompletionRate: cooloffAdded.length ? Math.round((cooloffResolved.length / cooloffAdded.length) * 100) : 0,
+      vanished,
+      vanishRate: cooloffResolved.length ? Math.round((vanished / cooloffResolved.length) * 100) : 0,
+      // Wishlist maturation
+      wishFaded: wishFaded.length,
+    };
+  }, [events]);
+
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) router.replace("/");
   }, [user, isAdmin, loading, router]);
@@ -121,14 +198,18 @@ export default function AdminPage() {
 
   async function fetchAll() {
     setFetching(true);
-    const [pSnap, uSnap, lSnap] = await Promise.all([
+    const [pSnap, uSnap, lSnap, eSnap] = await Promise.all([
       getDocs(query(collection(db, "products"), orderBy("createdAt", "desc"))),
       getDocs(collection(db, "users")),
       getDocs(query(collection(db, "sellerProducts"), orderBy("submittedAt", "desc"))),
+      // Behavior events — most recent 5k is plenty to compute the funnel at
+      // seed scale; caps the read so this can't balloon as the log grows.
+      getDocs(query(collection(db, "events"), orderBy("ts", "desc"), limit(5000))).catch(() => null),
     ]);
     setProducts(pSnap.docs.map((d) => ({ id: d.id, ...d.data() } as FSProduct)));
     setUsers(uSnap.docs.map((d) => ({ id: d.id, ...d.data() } as FSUser)));
     setListings(lSnap.docs.map((d) => ({ id: d.id, ...d.data() } as SellerProduct)));
+    setEvents(eSnap ? eSnap.docs.map((d) => ({ id: d.id, ...d.data() } as FSEvent)) : []);
     setFetching(false);
   }
 
@@ -296,6 +377,16 @@ export default function AdminPage() {
           }`}
         >
           <Users className="w-4 h-4" /> Users ({users.length})
+        </button>
+        <button
+          onClick={() => setTab("metrics")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === "metrics"
+              ? "zen-gradient text-white"
+              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" /> Metrics
         </button>
       </div>
 
@@ -505,6 +596,71 @@ export default function AdminPage() {
                 ))}
               </div>
             </>
+          )}
+        </div>
+      )}
+
+      {/* Metrics Tab — the behavior-change funnel */}
+      {tab === "metrics" && (
+        <div>
+          <h2 className="font-semibold text-lg mb-1">Behavior-change metrics</h2>
+          <p className="text-xs text-gray-400 mb-6">
+            Proof the product changes spending behavior — not vanity counts. From {metrics.totalEvents.toLocaleString()} logged events.
+          </p>
+
+          {metrics.totalEvents === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No events yet. They start logging as people use the app.</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Headline tiles */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <MetricTile label="Money not spent" value={formatPrice(metrics.totalSaved)} accent="green"
+                  sub={`${formatPrice(metrics.simulatedSpend)} carts + ${formatPrice(metrics.fadeSavings)} faded wishes`} />
+                <MetricTile label="Weekly active users" value={metrics.wau.toLocaleString()}
+                  sub={`${metrics.totalUsers} total ever`} />
+                <MetricTile label="Fake orders" value={metrics.fakeOrders.toLocaleString()}
+                  sub={`${metrics.fakeOrdersPerUser.toFixed(1)} per buyer`} />
+                <MetricTile label="Repeat urge users" value={metrics.repeatUrgeUsers.toLocaleString()} accent="blue"
+                  sub="came back for a 2nd check-in" />
+              </div>
+
+              {/* Urge funnel */}
+              <div className="card p-5">
+                <h3 className="font-semibold text-sm mb-4">Urge check-in funnel</h3>
+                <div className="space-y-3">
+                  <FunnelRow label="Urge check-ins started" value={metrics.urgeStarted} pct={100} />
+                  <FunnelRow label="Completed (didn't abandon)" value={metrics.urgeResolved} pct={metrics.urgeCompletionRate} />
+                  <FunnelRow label="Rode it out — no fake-buy needed" value={metrics.surfed} pct={metrics.surfRate}
+                    hint="pure avoidance: the urge passed without even a simulated purchase" />
+                </div>
+              </div>
+
+              {/* Cooling-off */}
+              <div className="card p-5">
+                <h3 className="font-semibold text-sm mb-4">Cooling-off outcomes</h3>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <p className="font-bold text-xl">{metrics.cooloffAdded}</p>
+                    <p className="text-[11px] text-gray-400">items parked</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-xl">{metrics.cooloffCompletionRate}%</p>
+                    <p className="text-[11px] text-gray-400">came back to decide</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-xl text-green-600 dark:text-green-400">{metrics.vanishRate}%</p>
+                    <p className="text-[11px] text-gray-400">urge vanished on its own</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-gray-400">
+                Reads the most recent 5,000 events. Signed-out visitors are counted by an anonymous per-browser id.
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -769,6 +925,45 @@ export default function AdminPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function MetricTile({
+  label, value, sub, accent,
+}: {
+  label: string; value: string; sub?: string; accent?: "green" | "blue";
+}) {
+  return (
+    <div className="card p-4">
+      <p className="text-[11px] text-gray-400 uppercase tracking-wide">{label}</p>
+      <p className={`font-bold text-2xl mt-1 ${
+        accent === "green" ? "text-green-600 dark:text-green-400"
+        : accent === "blue" ? "text-blue-600 dark:text-blue-400"
+        : "text-gray-900 dark:text-gray-100"
+      }`}>
+        {value}
+      </p>
+      {sub && <p className="text-[11px] text-gray-400 mt-1 leading-tight">{sub}</p>}
+    </div>
+  );
+}
+
+function FunnelRow({
+  label, value, pct, hint,
+}: {
+  label: string; value: number; pct: number; hint?: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm mb-1">
+        <span className="text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="font-semibold tabular-nums">{value.toLocaleString()} <span className="text-gray-400 font-normal">({pct}%)</span></span>
+      </div>
+      <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+        <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600" style={{ width: `${Math.min(pct, 100)}%` }} />
+      </div>
+      {hint && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
     </div>
   );
 }

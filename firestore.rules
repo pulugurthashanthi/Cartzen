@@ -66,5 +66,19 @@ service cloud.firestore {
         (request.auth != null && request.auth.uid == resource.data.sellerId &&
           resource.data.status != "approved");
     }
+
+    // Behavior-change analytics — append-only event log.
+    // Anyone (incl. signed-out visitors, who generate most of the funnel) may
+    // create an event; only admin can read them back for the Metrics tab.
+    // Events can't be edited or deleted. Require a string `name` so the
+    // collection can't be used as arbitrary public storage.
+    // NOTE seed-stage tradeoff: public create is spammable. A later step
+    // would route writes through a server endpoint with the admin SDK.
+    match /events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.name is string
+        && request.resource.data.name.size() < 40;
+      allow update, delete: if false;
+    }
   }
 }

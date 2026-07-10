@@ -6,6 +6,7 @@ import { Flame, Wind, ShoppingCart, Link2, Check, ArrowRight, Snowflake } from "
 import { useJournal } from "@/hooks/useJournal";
 import { showToast } from "@/components/ui/Toast";
 import { haptics } from "@/lib/haptics";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import type { ShoppingReason } from "@/types";
 
@@ -39,6 +40,14 @@ export default function UrgePage() {
   const [secondsLeft, setSecondsLeft] = useState(SURF_SECONDS);
   const [outcome, setOutcome] = useState<"surfed" | "redirected" | null>(null);
   const logged = useRef(false);
+  const started = useRef(false);
+
+  // Reaching this page IS the start of a check-in — the top of the funnel.
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    trackEvent({ name: "urge_started" });
+  }, []);
 
   const isLink = /^https?:\/\/\S+$/i.test(what.trim());
 
@@ -53,6 +62,7 @@ export default function UrgePage() {
     if (stage !== "surfing") return;
     if (secondsLeft <= 0) {
       logUrge(what.trim() ? `Urge: ${what.trim()} — rode it out` : "Rode out an urge");
+      trackEvent({ name: "urge_resolved", outcome: "surfed", reason: reason ?? undefined });
       haptics.success();
       showToast("You outlasted it. That's the whole skill.", "resist");
       setOutcome("surfed");
@@ -66,6 +76,7 @@ export default function UrgePage() {
 
   const fakeBuy = () => {
     logUrge(what.trim() ? `Urge: ${what.trim()} — redirected to fake basket` : "Urge redirected to fake basket");
+    trackEvent({ name: "urge_resolved", outcome: "redirected", reason: reason ?? undefined });
     setOutcome("redirected");
     if (isLink) router.push(`/import?url=${encodeURIComponent(what.trim())}`);
     else if (what.trim()) router.push(`/import`);

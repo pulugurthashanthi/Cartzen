@@ -5,6 +5,7 @@ import { showToast } from "@/components/ui/Toast";
 import { haptics } from "@/lib/haptics";
 import { savingsStorage, wishlistFadesStorage } from "@/lib/storage";
 import { trackChallenge } from "@/lib/track";
+import { trackEvent } from "@/lib/analytics";
 import { formatPrice } from "@/lib/utils";
 import type { WishlistItem } from "@/types";
 
@@ -37,12 +38,14 @@ export function MaturationCheck({ due, removeItem, markStillWanted }: Maturation
     savingsStorage.add(item.product.price);
     wishlistFadesStorage.add(item.product.price);
     trackChallenge("cooldown_resist");
+    trackEvent({ name: "wish_faded", amount: item.product.price, waitedDays: daysSince(item.addedAt) });
     haptics.success();
     showToast(`${formatPrice(item.product.price)} banked — the urge faded on its own`, "resist");
   };
 
   const stillWant = (item: WishlistItem) => {
     markStillWanted(item.productId);
+    trackEvent({ name: "wish_kept" });
     haptics.light();
     showToast(`Noted. We'll ask again in ${RECHECK_DAYS} days.`, "info");
   };
