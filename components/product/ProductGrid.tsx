@@ -209,6 +209,7 @@ export function ProductGrid() {
           {search && (
             <button
               onClick={() => setSearch("")}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <X className="w-3.5 h-3.5 text-gray-400" />
@@ -338,6 +339,8 @@ export function ProductGrid() {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
+            aria-label={cat.name}
+            aria-pressed={activeCategory === cat.id}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0",
               activeCategory === cat.id
@@ -346,9 +349,9 @@ export function ProductGrid() {
             )}
           >
             {cat.id === "all" && activeCategory === "all" ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4" aria-hidden="true" />
             ) : (
-              <span>{cat.icon}</span>
+              <span aria-hidden="true">{cat.icon}</span>
             )}
             {cat.name}
           </button>
@@ -368,19 +371,28 @@ export function ProductGrid() {
           {search && (
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               🔍 &ldquo;{search}&rdquo;
-              <button onClick={() => setSearch("")}><X className="w-3 h-3" /></button>
+              <button onClick={() => setSearch("")} aria-label={`Remove ${search} filter`}>
+                <X className="w-3 h-3" />
+              </button>
             </span>
           )}
           {priceRange && (
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               💰 {PRICE_RANGES.find(r => r.min === priceRange.min)?.label}
-              <button onClick={() => setPriceRange(null)}><X className="w-3 h-3" /></button>
+              <button
+                onClick={() => setPriceRange(null)}
+                aria-label={`Remove ${PRICE_RANGES.find(r => r.min === priceRange.min)?.label ?? "price"} filter`}
+              >
+                <X className="w-3 h-3" />
+              </button>
             </span>
           )}
           {minDiscount !== null && (
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
               🏷️ {minDiscount}%+ off
-              <button onClick={() => setMinDiscount(null)}><X className="w-3 h-3" /></button>
+              <button onClick={() => setMinDiscount(null)} aria-label={`Remove ${minDiscount}%+ off filter`}>
+                <X className="w-3 h-3" />
+              </button>
             </span>
           )}
           <button onClick={clearAll} className="text-xs text-gray-400 hover:text-rose-500 transition-colors px-1">
@@ -395,11 +407,18 @@ export function ProductGrid() {
           <h2 className="font-display text-lg font-bold text-gray-900 dark:text-gray-100">
             {search ? `Results for "${search}"` : activeCategory === "all" ? "Featured for you" : categories.find((c) => c.id === activeCategory)?.name}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          {/* aria-live announces the count once it's known/changes; the loading
+              skeleton needs its own accessible text or it's an empty node to
+              assistive tech even though it's visibly a pulsing placeholder. */}
+          <p className="text-xs text-gray-400 mt-0.5" aria-live="polite">
             {firestoreLoaded ? (
               `${filtered.length} product${filtered.length !== 1 ? "s" : ""}`
             ) : (
-              <span className="inline-block h-3 w-16 rounded bg-gray-200 dark:bg-gray-700 animate-pulse align-middle" />
+              <span
+                role="status"
+                aria-label="Loading product count"
+                className="inline-block h-3 w-16 rounded bg-gray-200 dark:bg-gray-700 animate-pulse align-middle"
+              />
             )}
           </p>
         </div>
